@@ -159,3 +159,168 @@ Within 3 months of launch:
 4. **Define expiry rules**: *"How many days before expiry do we stop distribution?"* (System enforces this)  
 
 > This system doesn’t just track inventory—it protects your mission. Every meal accounted for means every beneficiary served with dignity, safety, and transparency. 🌾✨
+
+
+# technecal details
+
+## Core entities (full CRUD)
+php artisan make:filament-resource Warehouse --generate --soft-deletes
+php artisan make:filament-resource DistributionArea --generate --view
+php artisan make:filament-resource RawMaterial --generate --view --soft-deletes
+php artisan make:filament-resource Product --generate --view --soft-deletes
+
+## Inventory management (specialized workflows)
+php artisan make:filament-resource Batch --generate --view
+php artisan make:filament-resource InventoryTransaction --generate --view
+php artisan make:filament-resource DistributionRecord --generate --view
+php artisan make:filament-resource TransactionApproval --generate --view
+
+## Read-only / support models
+php artisan make:filament-resource ProductStock --view-only
+php artisan make:filament-resource User --generate --view # We'll customize heavily
+
+
+
+
+# 📋 PROMPT TEMPLATE (Copy-Paste for Each Module)
+
+CONTEXT:
+I am building an inventory management system for food distribution using Laravel 11 + Filament v5. The system tracks raw materials → meal preparation → distribution to mosques via warehouses. I need you to enhance ONE specific module with production-ready code.
+
+MODULE TO ENHANCE: Warehouse
+
+TECHNICAL STACK:
+- Laravel 11.0 (PHP 8.3)
+- Filament v5.0 (2026 release)
+- UUID primary keys (dyrynda/laravel-model-uuid)
+- Spatie Permissions for roles
+- Clockwork for debugging
+- Antigravity IDE with Claude Opus 4.6
+
+CURRENT FILES EXISTING:
+- app/Models/Warehouse.php
+- app/Filament/Resources/WarehouseResource.php
+- database/migrations/ ....  warehouse_table.php
+
+ENHANCEMENT REQUIREMENTS:
+
+1. MODEL LAYER (Warehouse.php)
+   - Add fillable properties
+   - Define ALL relationships (belongsTo, hasMany, belongsToMany, morphTo, etc.)
+   - Add accessors/mutators for formatted data
+   - Add scopes for common queries (e.g., active(), expired(), byWarehouse())
+   - Add constants for enums (TYPES, STATUSES, etc.)
+   - Add validation rules method
+   - Add UUID boot method if needed
+   - Add observer events if needed (creating, created, updating, updated)
+   - Add custom methods for business logic
+
+2. RESOURCE LAYER ([WarehouseResource].php)
+   - Form schema with:
+     * All fields with proper validation
+     * Conditional fields (live() + visible())
+     * Helper text for user guidance
+     * Default values
+     * Placeholder text
+     * Column spans for layout
+   - Table schema with:
+     * All essential columns
+     * Badge formatting for status fields
+     * Icon columns for boolean fields
+     * Date/time formatting
+     * Searchable & sortable columns
+     * Column grouping if needed
+   - Filters with:
+     * Date range filters
+     * Status filters
+     * Warehouse filters
+     * Search filters
+   - Actions with:
+     * View action (if applicable)
+     * Edit action
+     * Delete action (with soft deletes)
+     * Custom actions (approve, reject, etc.)
+     * Bulk actions if needed
+   - Relation managers (if model has relationships)
+   - Header actions (create button, import, export)
+
+3. POLICY LAYER (WarehousePolicy.php)
+   - Define authorization rules for:
+     * viewAny
+     * view
+     * create
+     * update
+     * delete
+     * restore
+     * forceDelete
+   - Role-based checks (admin, warehouse_staff, receiver, compliance_officer)
+   - Warehouse-based scoping (users can only see their assigned warehouse)
+
+4. FACTORY LAYER (WarehouseFactory.php)
+   - Define realistic test data
+   - Add states for different scenarios (expired, active, etc.)
+   - Add relationships (has(), for(), etc.)
+
+5. WIDGETS (if applicable)
+   - Create dashboard widget for this module
+   - Show key metrics (total count, recent items, alerts)
+   - Add chart if relevant (stock levels over time, etc.)
+
+6. NOTIFICATIONS (if applicable)
+   - Create notification class for important events
+   - Define notification channels (database, mail)
+   - Add notification triggers in model/resource
+
+7. TESTING CONSIDERATIONS
+   - List key test scenarios
+   - Edge cases to handle
+   - Validation rules to test
+
+8. BUSINESS LOGIC REQUIREMENTS:
+
+    1. TYPE RESTRICTIONS:
+      - Main warehouse can send to ANY warehouse
+      - Association warehouses can ONLY receive from main warehouse
+      - Distribution points can ONLY receive from association warehouses
+
+    2. CAPACITY VALIDATION:
+      - Before accepting stock, check if warehouse has capacity
+      - Formula: current_stock + incoming_quantity <= capacity
+      - Show warning if >80% capacity reached
+
+    3. ACTIVE/INACTIVE RULES:
+      - Inactive warehouses cannot receive new stock
+      - Inactive warehouses can still be viewed in reports (archival)
+
+    4. SOFT DELETE BEHAVIOR:
+      - When soft-deleted, all related stock should be transferred to main warehouse
+      - Show confirmation dialog: "Transfer X units to Main Warehouse?"
+
+    5. DASHBOARD METRICS:
+      - Total warehouses count
+      - Active vs inactive breakdown
+      - Capacity utilization chart
+      - Recent warehouse activities
+
+    6. VALIDATION RULES:
+      - name: required, max:255, unique (except self)
+      - type: required, must be one of: main, association, distribution_point
+      - location: required, max:255
+      - capacity: nullable, integer, min:0
+      - is_active: boolean
+
+    7. SPECIAL CONSIDERATIONS:
+      - There MUST be exactly ONE main warehouse at all times
+      - Prevent deletion of the main warehouse
+      - Auto-assign new users to main warehouse if no warehouse specified
+
+
+DELIVERABLES:
+- Complete, production-ready code for all files
+- Inline comments explaining complex logic
+- Error handling for edge cases
+- Performance optimizations (eager loading, indexes)
+- Security considerations (authorization, validation)
+
+FORMAT:
+Provide code in separate code blocks for each file with clear file paths.

@@ -1,0 +1,26 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../app/Livewire/**/*';
+@source '../../../../resources/views/filament/**/*';
+@source '../../../../resources/views/livewire/**/*';
+
+
+/* Reducing Spacing
+Finally, we can reduce the spacing between inputs and the section. */
+
+/* .fi-input, .fi-select-input, .fi-fo-field-wrp-label > span {
+    @apply text-xs;
+}
+
+form .fi-section.fi-section:not(.fi-section-not-contained):not(.fi-divided)>.fi-section-content-ctn>.fi-section-content,
+.fi-section:not(.fi-section-not-contained).fi-divided>.fi-section-content-ctn>.fi-section-content {
+    @apply p-2;
+}
+
+.fi-sc.fi-sc-has-gap {
+    @apply gap-2;
+}
+.fi-main,.fi-sidebar-nav{
+    @apply px-5;
+} */

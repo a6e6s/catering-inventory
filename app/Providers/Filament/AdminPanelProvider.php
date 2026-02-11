@@ -10,14 +10,15 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
+
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Support\Enums\Width;
+use App\Http\Middleware\SetLocale;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -28,6 +29,13 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->passwordReset()
+            ->font('Cairo')
+            ->viteTheme('resources/css/filament/admin/theme.css')
+            // ->renderHook('panels::topbar.start', fn() => '<a href="' . route('home') . '" class="">'.__('Home').'</a>')
+            ->renderHook('panels::topbar.end', fn() => view('filament.language-switcher'))
+            ->maxContentWidth(Width::Full)
+            ->sidebarCollapsibleOnDesktop(true)
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -37,10 +45,7 @@ class AdminPanelProvider extends PanelProvider
                 Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
-            ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
-            ])
+
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -51,6 +56,7 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                setlocale::class,
             ])
             ->authMiddleware([
                 Authenticate::class,
