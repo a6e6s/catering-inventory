@@ -1,0 +1,42 @@
+created:
+    - database/factories/WarehouseFactory.php
+    - database/factories/RawMaterialFactory.php
+    - database/factories/BatchFactory.php
+    - database/factories/ProductFactory.php
+    - database/factories/ProductIngredientFactory.php
+    - database/factories/ProductStockFactory.php
+    - database/factories/InventoryTransactionFactory.php
+    - database/factories/TransactionApprovalFactory.php
+    - database/factories/DistributionRecordFactory.php
+    - database/factories/DistributionAreaFactory.php
+    - database/migrations/2026_02_11_085123_create_warehouses_table.php
+    - database/migrations/2026_02_11_085124_create_raw_materials_table.php
+    - database/migrations/2026_02_11_085125_create_batches_table.php
+    - database/migrations/2026_02_11_085126_create_products_table.php
+    - database/migrations/2026_02_11_085127_create_product_ingredients_table.php
+    - database/migrations/2026_02_11_085128_create_product_stocks_table.php
+    - database/migrations/2026_02_11_085129_create_inventory_transactions_table.php
+    - database/migrations/2026_02_11_085130_create_transaction_approvals_table.php
+    - database/migrations/2026_02_11_085131_create_distribution_records_table.php
+    - database/migrations/2026_02_11_085132_create_distribution_areas_table.php
+    - app/Models/Warehouse.php
+    - app/Models/RawMaterial.php
+    - app/Models/Batch.php
+    - app/Models/Product.php
+    - app/Models/ProductIngredient.php
+    - app/Models/ProductStock.php
+    - app/Models/InventoryTransaction.php
+    - app/Models/TransactionApproval.php
+    - app/Models/DistributionRecord.php
+    - app/Models/DistributionArea.php
+models:
+    Warehouse: { id: uuid, name: 'string index', type: 'string index', location: string, capacity: 'integer nullable', is_active: 'boolean default:true index', softdeletes: softDeletes, relationships: { hasMany: 'Batch, ProductStock, InventoryTransaction:from_warehouse, InventoryTransaction:to_warehouse, User:warehouse, DistributionRecord' } }
+    RawMaterial: { id: uuid, name: 'string index', unit: string, description: 'text nullable', is_active: 'boolean default:true index', softdeletes: softDeletes, relationships: { hasMany: Batch, belongsToMany: 'Product:&ProductIngredient' } }
+    Batch: { id: uuid, raw_material_id: 'uuid foreign', warehouse_id: 'uuid foreign', lot_number: 'string index', quantity: 'decimal:10,2', expiry_date: 'date index', received_date: date, status: 'string default:active index', notes: 'text nullable', relationships: { belongsTo: 'RawMaterial, Warehouse', hasMany: InventoryTransaction } }
+    Product: { id: uuid, name: 'string index', unit: string, description: 'text nullable', preparation_time: "integer nullable comment:'in_minutes'", is_active: 'boolean default:true index', softdeletes: softDeletes, relationships: { belongsToMany: 'RawMaterial:&ProductIngredient', hasMany: 'ProductStock, InventoryTransaction, DistributionRecord' } }
+    ProductIngredient: { product_id: 'uuid foreign', raw_material_id: 'uuid foreign', quantity_required: 'decimal:10,2', unit: string, relationships: { belongsTo: 'Product, RawMaterial' } }
+    ProductStock: { id: uuid, product_id: 'uuid foreign', warehouse_id: 'uuid foreign', batch_id: "uuid foreign nullable comment:'For meal batches with expiry'", quantity: 'decimal:10,2', last_updated: timestamp, relationships: { belongsTo: 'Product, Warehouse, Batch' } }
+    InventoryTransaction: { id: uuid, type: 'string index', from_warehouse_id: 'uuid foreign nullable', to_warehouse_id: 'uuid foreign nullable', product_id: 'uuid foreign', batch_id: 'uuid foreign nullable', quantity: 'decimal:10,2', status: 'string default:draft index', initiated_by: 'uuid foreign:users', notes: 'text nullable', transaction_date: 'timestamp useCurrent index', relationships: { belongsTo: 'Warehouse:from_warehouse, Warehouse:to_warehouse, Product, Batch, User:initiated_by', hasMany: 'TransactionApproval, DistributionRecord' } }
+    TransactionApproval: { id: uuid, transaction_id: 'uuid foreign', approver_role: "string comment:'receiver,warehouse_manager,compliance_officer'", approver_id: 'uuid foreign:users', step: 'integer default:1', status: 'string default:pending index', comments: 'text nullable', approved_at: 'timestamp nullable', relationships: { belongsTo: 'InventoryTransaction, User:approver' } }
+    DistributionRecord: { id: uuid, transaction_id: 'uuid foreign', distribution_area_id: 'uuid foreign', beneficiaries_served: integer, photos: "json nullable comment:'Array of photo URLs'", verified_by: 'uuid foreign:users nullable', verified_at: 'timestamp nullable index', notes: 'text nullable', relationships: { belongsTo: 'InventoryTransaction, DistributionArea, User:verified_by' } }
+    DistributionArea: { id: uuid, name: 'string index', location: string, contact_person: 'string nullable', contact_phone: 'string nullable', is_active: 'boolean default:true index', relationships: { hasMany: DistributionRecord } }

@@ -1,173 +1,116 @@
 models:
   Warehouse:
-    uuid: uuid
-    name: string
-    type: string # enum:main,association,distribution_point
+    id: uuid
+    name: string index
+    type: string index # enum:main,association,distribution_point
     location: string
     capacity: integer nullable
-    is_active: boolean default:true
+    is_active: boolean default:true index
     softDeletes: true
-    timestamps: true
     relationships:
-      hasMany: Batch, ProductStock, InventoryTransaction.from_warehouse, InventoryTransaction.to_warehouse, User.warehouse, DistributionRecord
-    indexes:
-      - type
-      - is_active
+      hasMany: Batch, ProductStock, InventoryTransaction:from_warehouse, InventoryTransaction:to_warehouse, User:warehouse, DistributionRecord
 
   RawMaterial:
-    uuid: uuid
-    name: string
+    id: uuid
+    name: string index
     unit: string # enum:kg,liter,gram,piece,box,bag
     description: text nullable
-    is_active: boolean default:true
+    is_active: boolean default:true index
     softDeletes: true
-    timestamps: true
     relationships:
       hasMany: Batch
-      belongsToMany: Product using:ProductIngredient
-    indexes:
-      - name
-      - is_active
+      belongsToMany: Product:&ProductIngredient
 
   Batch:
-    uuid: uuid
+    id: uuid
     raw_material_id: uuid foreign
     warehouse_id: uuid foreign
-    lot_number: string
+    lot_number: string index
     quantity: decimal:10,2
-    expiry_date: date
+    expiry_date: date index
     received_date: date
-    status: string default:active # enum:active,expired,quarantined
+    status: string default:active index # enum:active,expired,quarantined
     notes: text nullable
-    timestamps: true
     relationships:
       belongsTo: RawMaterial, Warehouse
       hasMany: InventoryTransaction
-    indexes:
-      - lot_number
-      - expiry_date
-      - status
 
   Product:
-    uuid: uuid
-    name: string
+    id: uuid
+    name: string index
     unit: string # enum:portion,tray,box,package,meal_pack
     description: text nullable
-    preparation_time: integer nullable comment:in_minutes
-    is_active: boolean default:true
+    preparation_time: integer nullable comment:'in_minutes'
+    is_active: boolean default:true index
     softDeletes: true
-    timestamps: true
     relationships:
-      belongsToMany: RawMaterial using:ProductIngredient
+      belongsToMany: RawMaterial:&ProductIngredient
       hasMany: ProductStock, InventoryTransaction, DistributionRecord
-    indexes:
-      - name
-      - is_active
 
   ProductIngredient:
     product_id: uuid foreign
     raw_material_id: uuid foreign
     quantity_required: decimal:10,2
     unit: string # enum:kg,liter,gram,piece
-    timestamps: true
     relationships:
       belongsTo: Product, RawMaterial
-    indexes:
-      - product_id
-      - raw_material_id
 
   ProductStock:
-    uuid: uuid
+    id: uuid
     product_id: uuid foreign
     warehouse_id: uuid foreign
-    batch_id: uuid foreign nullable comment:For meal batches with expiry
+    batch_id: uuid foreign nullable comment:'For meal batches with expiry'
     quantity: decimal:10,2
     last_updated: timestamp
-    timestamps: true
     relationships:
       belongsTo: Product, Warehouse, Batch
-    indexes:
-      - product_id
-      - warehouse_id
-      - batch_id
 
   InventoryTransaction:
-    uuid: uuid
-    type: string # enum:transfer,return,waste,distribution,adjustment
+    id: uuid
+    type: string index # enum:transfer,return,waste,distribution,adjustment
     from_warehouse_id: uuid foreign nullable
     to_warehouse_id: uuid foreign nullable
     product_id: uuid foreign
     batch_id: uuid foreign nullable
     quantity: decimal:10,2
-    status: string  default:draft # enum:draft,pending_approval,approved,rejected,completed
-    initiated_by: uuid foreign references:id on:users
+    status: string default:draft index # enum:draft,pending_approval,approved,rejected,completed
+    initiated_by: uuid foreign:users
     notes: text nullable
-    transaction_date: timestamp default:now
-    timestamps: true
+    transaction_date: timestamp useCurrent index
     relationships:
-      belongsTo: Warehouse.from_warehouse, Warehouse.to_warehouse, Product, Batch, User.initiated_by
+      belongsTo: Warehouse:from_warehouse, Warehouse:to_warehouse, Product, Batch, User:initiated_by
       hasMany: TransactionApproval, DistributionRecord
-    indexes:
-      - type
-      - status
-      - from_warehouse_id
-      - to_warehouse_id
-      - transaction_date
 
   TransactionApproval:
-    uuid: uuid
+    id: uuid
     transaction_id: uuid foreign
-    approver_role: string comment:receiver,warehouse_manager,compliance_officer
-    approver_id: uuid foreign references:id on:users
+    approver_role: string comment:'receiver,warehouse_manager,compliance_officer'
+    approver_id: uuid foreign:users
     step: integer default:1
-    status: string default:pending # enum:pending,approved,rejected
+    status: string default:pending index # enum:pending,approved,rejected
     comments: text nullable
     approved_at: timestamp nullable
-    timestamps: true
     relationships:
-      belongsTo: InventoryTransaction, User.approver
-    indexes:
-      - transaction_id
-      - status
-      - step
+      belongsTo: InventoryTransaction, User:approver
 
   DistributionRecord:
-    uuid: uuid
+    id: uuid
     transaction_id: uuid foreign
     distribution_area_id: uuid foreign
     beneficiaries_served: integer
-    photos: json nullable comment:Array of photo URLs
-    verified_by: uuid foreign references:id on:users nullable
-    verified_at: timestamp nullable
+    photos: json nullable comment:'Array of photo URLs'
+    verified_by: uuid foreign:users nullable
+    verified_at: timestamp nullable index
     notes: text nullable
-    timestamps: true
     relationships:
-      belongsTo: InventoryTransaction, DistributionArea, User.verified_by
-    indexes:
-      - transaction_id
-      - distribution_area_id
-      - verified_at
+      belongsTo: InventoryTransaction, DistributionArea, User:verified_by
 
   DistributionArea:
-    uuid: uuid
-    name: string
+    id: uuid
+    name: string index
     location: string
     contact_person: string nullable
     contact_phone: string nullable
-    is_active: boolean default:true
-    timestamps: true
+    is_active: boolean default:true index
     relationships:
       hasMany: DistributionRecord
-    indexes:
-      - name
-      - is_active
-
-  User:
-    modify: true
-    columns:
-      warehouse_id: uuid foreign nullable
-      phone: string nullable
-      role: string nullable # enum:admin,warehouse_staff,receiver,compliance_officer
-    relationships:
-      belongsTo: Warehouse
-      hasMany: InventoryTransaction.initiated_by, TransactionApproval.approver, DistributionRecord.verified_by
