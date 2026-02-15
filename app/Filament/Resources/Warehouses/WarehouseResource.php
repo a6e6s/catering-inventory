@@ -9,7 +9,6 @@ use App\Filament\Resources\Warehouses\Pages\ViewWarehouse;
 use App\Filament\Resources\Warehouses\Schemas\WarehouseForm;
 use App\Filament\Resources\Warehouses\Schemas\WarehouseInfolist;
 use App\Filament\Resources\Warehouses\Tables\WarehousesTable;
-use App\Models\Warehouse;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -20,11 +19,43 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class WarehouseResource extends Resource
 {
-    protected static ?string $model = Warehouse::class;
+    protected static ?string $model = \App\Models\Warehouse::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'name';
+
+    protected static ?int $navigationSort = 1;
+
+    public static function getModelLabel(): string
+    {
+        return __('warehouse.model_label');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('warehouse.plural_model_label');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('warehouse.navigation_group');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('warehouse.plural_model_label');
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'location', 'type'];
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -58,11 +89,12 @@ class WarehouseResource extends Resource
         ];
     }
 
-    public static function getRecordRouteBindingEloquentQuery(): Builder
+    public static function getEloquentQuery(): Builder
     {
-        return parent::getRecordRouteBindingEloquentQuery()
+        return parent::getEloquentQuery()
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
-            ]);
+            ])
+            ->withCount(['users', 'batches', 'productStocks']);
     }
 }
