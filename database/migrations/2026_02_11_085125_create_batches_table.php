@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignUuid('warehouse_id')->constrained();
             $table->string('lot_number')->index();
             $table->decimal('quantity', 10, 2);
-            $table->date('expiry_date')->index();
+            $table->date('expiry_date')->nullable()->index();
             $table->date('received_date');
             $table->string('status')->default('active')->index();
             $table->text('notes')->nullable();

@@ -197,7 +197,7 @@ Within 3 months of launch:
 CONTEXT:
 I am building an inventory management system for food distribution using Laravel 11 + Filament v5. The system tracks raw materials → meal preparation → distribution to mosques via warehouses. I need you to enhance ONE specific module with production-ready code.
 
-MODULE TO ENHANCE: RawMaterial
+MODULE TO ENHANCE: Batch
 
 TECHNICAL STACK:
 - Laravel 11.0 (PHP 8.3)
@@ -208,13 +208,13 @@ TECHNICAL STACK:
 - Antigravity IDE with Claude Opus 4.6
 
 CURRENT FILES EXISTING:
-- app/Models/RawMaterial.php
-- app/Filament/Resources/RawMaterialResource.php
-- database/migrations/ ....  RawMaterial_table.php
+- app/Models/Batch.php
+- app/Filament/Resources/BatchResource.php
+- database/migrations/ ....  Batch_table.php
 
 ENHANCEMENT REQUIREMENTS:
 
-1. MODEL LAYER (RawMaterial.php)
+1. MODEL LAYER (Batch.php)
    - Add fillable properties
    - Define ALL relationships (belongsTo, hasMany, belongsToMany, morphTo, etc.)
    - Add accessors/mutators for formatted data
@@ -225,7 +225,7 @@ ENHANCEMENT REQUIREMENTS:
    - Add observer events if needed (creating, created, updating, updated)
    - Add custom methods for business logic
 
-2. RESOURCE LAYER (RawMaterialResource.php)
+2. RESOURCE LAYER (BatchResource.php)
    - Form schema with:
      * All fields with proper validation
      * Conditional fields (live() + visible())
@@ -243,7 +243,7 @@ ENHANCEMENT REQUIREMENTS:
    - Filters with:
      * Date range filters
      * Status filters
-     * RawMaterial filters
+     * Batch filters
      * Search filters
    - Actions with:
      * View action (if applicable)
@@ -254,7 +254,7 @@ ENHANCEMENT REQUIREMENTS:
    - Relation managers (if model has relationships)
    - Header actions (create button, import, export)
 
-3. POLICY LAYER (RawMaterialPolicy.php)
+3. POLICY LAYER (BatchPolicy.php)
    - Define authorization rules for:
      * viewAny
      * view
@@ -264,9 +264,9 @@ ENHANCEMENT REQUIREMENTS:
      * restore
      * forceDelete
    - Role-based checks (admin, warehouse_staff, receiver, compliance_officer)
-   - RawMaterial-based scoping (users can only see their assigned RawMaterial)
+   - Batch-based scoping (users can only see their assigned Batch)
 
-4. FACTORY LAYER (RawMaterialFactory.php)
+4. FACTORY LAYER (BatchFactory.php)
    - Define realistic test data
    - Add states for different scenarios (expired, active, etc.)
    - Add relationships (has(), for(), etc.)
@@ -288,37 +288,40 @@ ENHANCEMENT REQUIREMENTS:
 
 8. BUSINESS LOGIC REQUIREMENTS:
 
-    1. UNIT CONVERSIONS:
-      - Support multiple units (kg, liter, gram, piece, box, bag)
-      - Store conversion rates (1kg = 1000g, 1box = 12pieces, etc.)
-      - Auto-convert when displaying in different units
+    1. EXPIRY MANAGEMENT:
+      - Auto-update status to 'expired' when expiry_date < today
+      - Daily scheduled job to check and update expired batches
+      - Show visual indicator for near-expiry (7 days warning)
 
-    2. ACTIVE/INACTIVE RULES:
-      - Inactive raw materials cannot be used in new batches
-      - Inactive raw materials still visible in historical reports
+    2. FIFO (First-In-First-Out) TRACKING:
+      - Sort batches by received_date for stock allocation
+      - Prioritize older batches for distribution
+      - Show days until expiry in table
 
-    3. USAGE TRACKING:
-      - Show which products use this raw material
-      - Show total quantity used in last 30 days
-      - Show current stock across all warehouses
+    3. STATUS TRANSITIONS:
+      - active → quarantined (if quality issue reported)
+      - active → expired (auto or manual)
+      - quarantined → active (after quality check)
+      - quarantined → waste (if rejected)
 
-    4. EXPIRY ALERTS:
-      - Flag raw materials with batches expiring in <7 days
-      - Show count of expired batches
+    4. STOCK MOVEMENT:
+      - Track all movements via InventoryTransaction
+      - Show transaction history for this batch
+      - Calculate remaining quantity: initial - (all outgoing transactions)
 
     5. VALIDATION RULES:
-      - name: required, max:255, unique
-      - unit: required, enum from predefined list
-      - description: nullable, max:65535
+      - raw_material_id: required, exists in raw_materials table
+      - warehouse_id: required, exists in warehouses table
+      - lot_number: required, unique per raw_material
+      - quantity: required, decimal:10,2, min:0.01
+      - expiry_date: required, after:today
+      - received_date: required, before_or_equal:today
+      - status: required, enum: active, expired, quarantined
 
-    6. RELATIONSHIPS TO DISPLAY:
-      - Batches (with expiry dates and quantities)
-      - Products that use this material (via ProductIngredient pivot)
-      - Total stock across all warehouses
-
-    7. SPECIAL CONSIDERATIONS:
-      - Prevent deletion if used in active products
-      - Show warning: "This material is used in X active products"
+    6. SPECIAL CONSIDERATIONS:
+      - Prevent deletion if quantity > 0
+      - Show warning: "This batch has X units remaining"
+      - Auto-create InventoryTransaction when batch is received (initial stock)
 
 
 DELIVERABLES:
@@ -330,3 +333,8 @@ DELIVERABLES:
 
 FORMAT:
 Provide code in separate code blocks for each file with clear file paths.
+
+
+
+
+

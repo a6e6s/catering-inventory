@@ -22,6 +22,7 @@ class InventoryTransaction extends Model
         'from_warehouse_id',
         'to_warehouse_id',
         'product_id',
+        'raw_material_id',
         'batch_id',
         'quantity',
         'status',
@@ -56,6 +57,11 @@ class InventoryTransaction extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function rawMaterial(): BelongsTo
+    {
+        return $this->belongsTo(RawMaterial::class);
     }
 
     public function batch(): BelongsTo

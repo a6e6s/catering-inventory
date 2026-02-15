@@ -11,29 +11,36 @@ class BatchInfolist
     {
         return $schema
             ->components([
-                TextEntry::make('id')
-                    ->label('ID'),
-                TextEntry::make('rawMaterial.name')
-                    ->label('Raw material'),
-                TextEntry::make('warehouse.name')
-                    ->label('Warehouse'),
-                TextEntry::make('lot_number'),
-                TextEntry::make('quantity')
-                    ->numeric(),
-                TextEntry::make('expiry_date')
-                    ->date(),
-                TextEntry::make('received_date')
-                    ->date(),
-                TextEntry::make('status'),
-                TextEntry::make('notes')
-                    ->placeholder('-')
-                    ->columnSpanFull(),
-                TextEntry::make('created_at')
-                    ->dateTime()
-                    ->placeholder('-'),
-                TextEntry::make('updated_at')
-                    ->dateTime()
-                    ->placeholder('-'),
+                \Filament\Schemas\Components\Section::make(__('batch.sections.general'))
+                    ->schema([
+                        TextEntry::make('rawMaterial.name')
+                            ->label(__('batch.fields.raw_material')),
+                        TextEntry::make('warehouse.name')
+                            ->label(__('batch.fields.warehouse')),
+                        TextEntry::make('lot_number')
+                            ->label(__('batch.fields.lot_number'))
+                            ->copyable(),
+                        TextEntry::make('quantity')
+                            ->label(__('batch.fields.quantity'))
+                            ->numeric(),
+                    ])->columns(2),
+                \Filament\Schemas\Components\Section::make(__('batch.sections.dates'))
+                    ->schema([
+                        TextEntry::make('received_date')
+                            ->label(__('batch.fields.received_date'))
+                            ->date(),
+                        TextEntry::make('expiry_date')
+                            ->label(__('batch.fields.expiry_date'))
+                            ->date()
+                            ->color(fn ($record) => $record->expiry_date->isPast() ? 'danger' : 'success'),
+                        TextEntry::make('status')
+                            ->label(__('batch.fields.status'))
+                            ->badge(),
+                        TextEntry::make('notes')
+                            ->label(__('batch.fields.notes'))
+                            ->columnSpanFull()
+                            ->placeholder('-'),
+                    ])->columns(2),
             ]);
     }
 }

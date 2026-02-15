@@ -22,6 +22,26 @@ class BatchResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    public static function getModelLabel(): string
+    {
+        return __('batch.single');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('batch.plural');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('batch.navigation_label');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('warehouse.navigation_group');
+    }
+
     public static function form(Schema $schema): Schema
     {
         return BatchForm::configure($schema);

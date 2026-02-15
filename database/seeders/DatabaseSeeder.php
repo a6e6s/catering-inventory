@@ -20,7 +20,14 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'admin@admin.com',
+            'password' => bcrypt('password'), // Ensure password is known
             'role' => 'admin',
+        ]);
+
+        $this->call([
+            WarehouseSeeder::class,
+            RawMaterialSeeder::class,
+            BatchSeeder::class,
         ]);
     }
 }
