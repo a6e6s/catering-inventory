@@ -35,16 +35,22 @@ class Product extends Model
     {
         return [
             'is_active' => 'boolean',
+            'preparation_time' => 'integer',
+            'unit' => \App\Enums\ProductUnit::class,
         ];
     }
 
     public function rawMaterials(): BelongsToMany
     {
-        return $this->belongsToMany(RawMaterial::class)
+        return $this->belongsToMany(RawMaterial::class, 'product_ingredients')
             ->using(ProductIngredient::class)
-            ->as('product_ingredient')
-            ->withPivot('id', 'product_id', 'raw_material_id', 'quantity_required', 'unit')
+            ->withPivot('id', 'quantity_required', 'unit')
             ->withTimestamps();
+    }
+
+    public function ingredients(): HasMany
+    {
+        return $this->hasMany(ProductIngredient::class);
     }
 
     public function productStocks(): HasMany
@@ -60,5 +66,10 @@ class Product extends Model
     public function distributionRecords(): HasMany
     {
         return $this->hasMany(DistributionRecord::class);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
     }
 }

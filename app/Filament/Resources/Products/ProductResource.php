@@ -24,6 +24,26 @@ class ProductResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    public static function getModelLabel(): string
+    {
+        return __('product.single');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('product.plural');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('product.navigation_label');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('warehouse.navigation_group'); // Consistent grouping
+    }
+
     public static function form(Schema $schema): Schema
     {
         return ProductForm::configure($schema);
@@ -42,7 +62,7 @@ class ProductResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            \App\Filament\Resources\Products\RelationManagers\RawMaterialsRelationManager::class,
         ];
     }
 

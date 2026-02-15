@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\Products\Schemas;
 
-use App\Models\Product;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class ProductInfolist
@@ -13,27 +13,25 @@ class ProductInfolist
     {
         return $schema
             ->components([
-                TextEntry::make('id')
-                    ->label('ID'),
-                TextEntry::make('name'),
-                TextEntry::make('unit'),
-                TextEntry::make('description')
-                    ->placeholder('-')
-                    ->columnSpanFull(),
-                TextEntry::make('preparation_time')
-                    ->numeric()
-                    ->placeholder('-'),
-                IconEntry::make('is_active')
-                    ->boolean(),
-                TextEntry::make('created_at')
-                    ->dateTime()
-                    ->placeholder('-'),
-                TextEntry::make('updated_at')
-                    ->dateTime()
-                    ->placeholder('-'),
-                TextEntry::make('deleted_at')
-                    ->dateTime()
-                    ->visible(fn (Product $record): bool => $record->trashed()),
+                Section::make(__('product.sections.general'))
+                    ->schema([
+                        TextEntry::make('name')
+                            ->label(__('product.fields.name')),
+                        TextEntry::make('unit')
+                            ->label(__('product.fields.unit'))
+                            ->badge(),
+                        TextEntry::make('description')
+                            ->label(__('product.fields.description'))
+                            ->columnSpanFull(),
+                    ])->columns(2),
+                Section::make(__('product.sections.settings'))
+                    ->schema([
+                        TextEntry::make('preparation_time')
+                            ->label(__('product.fields.preparation_time')),
+                        IconEntry::make('is_active')
+                            ->label(__('product.fields.is_active'))
+                            ->boolean(),
+                    ])->columns(2),
             ]);
     }
 }

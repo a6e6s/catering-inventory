@@ -10,6 +10,8 @@ class ProductIngredient extends Pivot
 {
     use HasFactory;
 
+    protected $table = 'product_ingredients';
+
     /**
      * The attributes that are mass assignable.
      *

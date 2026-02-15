@@ -13,7 +13,7 @@ class RawMaterialPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->role === 'admin';
+        return $user->hasRole('admin');
     }
 
     /**
@@ -21,7 +21,7 @@ class RawMaterialPolicy
      */
     public function view(User $user, RawMaterial $rawMaterial): bool
     {
-        return $user->role === 'admin';
+        return $user->hasRole('admin');
     }
 
     /**
@@ -29,7 +29,7 @@ class RawMaterialPolicy
      */
     public function create(User $user): bool
     {
-        return $user->role === 'admin';
+        return $user->hasRole('admin');
     }
 
     /**
@@ -37,7 +37,7 @@ class RawMaterialPolicy
      */
     public function update(User $user, RawMaterial $rawMaterial): bool
     {
-        return $user->role === 'admin';
+        return $user->hasRole('admin');
     }
 
     /**
@@ -45,7 +45,7 @@ class RawMaterialPolicy
      */
     public function delete(User $user, RawMaterial $rawMaterial): bool
     {
-        return $user->role === 'admin';
+        return $user->hasRole('admin');
     }
 
     /**
@@ -53,7 +53,7 @@ class RawMaterialPolicy
      */
     public function restore(User $user, RawMaterial $rawMaterial): bool
     {
-        return $user->role === 'admin';
+        return $user->hasRole('admin');
     }
 
     /**
@@ -61,6 +61,6 @@ class RawMaterialPolicy
      */
     public function forceDelete(User $user, RawMaterial $rawMaterial): bool
     {
-        return $user->role === 'admin';
+        return $user->hasRole('admin');
     }
 }

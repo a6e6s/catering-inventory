@@ -197,7 +197,7 @@ Within 3 months of launch:
 CONTEXT:
 I am building an inventory management system for food distribution using Laravel 11 + Filament v5. The system tracks raw materials → meal preparation → distribution to mosques via warehouses. I need you to enhance ONE specific module with production-ready code.
 
-MODULE TO ENHANCE: Batch
+MODULE TO ENHANCE: PRODUCT
 
 TECHNICAL STACK:
 - Laravel 11.0 (PHP 8.3)
@@ -208,13 +208,13 @@ TECHNICAL STACK:
 - Antigravity IDE with Claude Opus 4.6
 
 CURRENT FILES EXISTING:
-- app/Models/Batch.php
-- app/Filament/Resources/BatchResource.php
-- database/migrations/ ....  Batch_table.php
+- app/Models/PRODUCT.php
+- app/Filament/Resources/PRODUCTResource.php
+- database/migrations/ ....  PRODUCT_table.php
 
 ENHANCEMENT REQUIREMENTS:
 
-1. MODEL LAYER (Batch.php)
+1. MODEL LAYER (PRODUCT.php)
    - Add fillable properties
    - Define ALL relationships (belongsTo, hasMany, belongsToMany, morphTo, etc.)
    - Add accessors/mutators for formatted data
@@ -225,7 +225,7 @@ ENHANCEMENT REQUIREMENTS:
    - Add observer events if needed (creating, created, updating, updated)
    - Add custom methods for business logic
 
-2. RESOURCE LAYER (BatchResource.php)
+2. RESOURCE LAYER (PRODUCTResource.php)
    - Form schema with:
      * All fields with proper validation
      * Conditional fields (live() + visible())
@@ -243,7 +243,7 @@ ENHANCEMENT REQUIREMENTS:
    - Filters with:
      * Date range filters
      * Status filters
-     * Batch filters
+     * PRODUCT filters
      * Search filters
    - Actions with:
      * View action (if applicable)
@@ -254,7 +254,7 @@ ENHANCEMENT REQUIREMENTS:
    - Relation managers (if model has relationships)
    - Header actions (create button, import, export)
 
-3. POLICY LAYER (BatchPolicy.php)
+3. POLICY LAYER (PRODUCTPolicy.php)
    - Define authorization rules for:
      * viewAny
      * view
@@ -264,9 +264,9 @@ ENHANCEMENT REQUIREMENTS:
      * restore
      * forceDelete
    - Role-based checks (admin, warehouse_staff, receiver, compliance_officer)
-   - Batch-based scoping (users can only see their assigned Batch)
+   - PRODUCT-based scoping (users can only see their assigned PRODUCT)
 
-4. FACTORY LAYER (BatchFactory.php)
+4. FACTORY LAYER (PRODUCTFactory.php)
    - Define realistic test data
    - Add states for different scenarios (expired, active, etc.)
    - Add relationships (has(), for(), etc.)
@@ -288,40 +288,48 @@ ENHANCEMENT REQUIREMENTS:
 
 8. BUSINESS LOGIC REQUIREMENTS:
 
-    1. EXPIRY MANAGEMENT:
-      - Auto-update status to 'expired' when expiry_date < today
-      - Daily scheduled job to check and update expired batches
-      - Show visual indicator for near-expiry (7 days warning)
+    1. PRODUCT INGREDIENTS (MANY-TO-MANY):
+      - Each product has multiple raw materials
+      - Each ingredient has quantity_required and unit
+      - Support fractional quantities (e.g., 0.25kg rice per meal)
+      - Show total cost calculation based on ingredient costs
 
-    2. FIFO (First-In-First-Out) TRACKING:
-      - Sort batches by received_date for stock allocation
-      - Prioritize older batches for distribution
-      - Show days until expiry in table
+    2. RECIPE VERSIONING:
+      - Track recipe changes over time
+      - Show which version was used for each batch
+      - Allow reverting to previous recipe versions
 
-    3. STATUS TRANSITIONS:
-      - active → quarantined (if quality issue reported)
-      - active → expired (auto or manual)
-      - quarantined → active (after quality check)
-      - quarantined → waste (if rejected)
+    3. UNIT STANDARDIZATION:
+      - Products measured in: portion, tray, box, package, meal_pack
+      - Define standard portion sizes (e.g., 1 meal_pack = 2 portions)
 
-    4. STOCK MOVEMENT:
-      - Track all movements via InventoryTransaction
-      - Show transaction history for this batch
-      - Calculate remaining quantity: initial - (all outgoing transactions)
+    4. ACTIVE/INACTIVE RULES:
+      - Inactive products cannot be used in new transactions
+      - Inactive products still visible in historical reports
 
-    5. VALIDATION RULES:
-      - raw_material_id: required, exists in raw_materials table
-      - warehouse_id: required, exists in warehouses table
-      - lot_number: required, unique per raw_material
-      - quantity: required, decimal:10,2, min:0.01
-      - expiry_date: required, after:today
-      - received_date: required, before_or_equal:today
-      - status: required, enum: active, expired, quarantined
+    5. PREPARATION METRICS:
+      - Track preparation_time in minutes
+      - Calculate production capacity per hour
+      - Show estimated completion time for large orders
 
-    6. SPECIAL CONSIDERATIONS:
-      - Prevent deletion if quantity > 0
-      - Show warning: "This batch has X units remaining"
-      - Auto-create InventoryTransaction when batch is received (initial stock)
+    6. VALIDATION RULES:
+      - name: required, max:255, unique
+      - unit: required, enum from predefined list
+      - description: nullable, max:65535
+      - preparation_time: nullable, integer, min:1
+      - is_active: boolean, default:true
+
+    7. RELATION MANAGER REQUIREMENTS:
+      - ProductIngredient relation manager with:
+        * Add/Edit/Delete ingredients
+        * Drag-and-drop reordering
+        * Quantity input with unit selector
+        * Real-time total cost calculation
+
+    8. SPECIAL CONSIDERATIONS:
+      - Prevent deletion if used in active transactions
+      - Show warning: "This product has X active transactions"
+      - Auto-calculate nutritional info from ingredients (future feature)
 
 
 DELIVERABLES:
