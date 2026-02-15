@@ -2,11 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Enums\WarehouseType;
 use App\Models\User;
 use App\Models\Warehouse;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class WarehouseTest extends TestCase
@@ -57,7 +55,7 @@ class WarehouseTest extends TestCase
     {
         $warehouse = Warehouse::factory()->create(['capacity' => 100]);
         // Mock current stock to be 0 (since factory doesn't create products)
-        // We can't easily mock the 'currentStock' method on the model without partial mocks, 
+        // We can't easily mock the 'currentStock' method on the model without partial mocks,
         // effectively tested by logic: (0 + 50) <= 100
 
         $this->assertTrue($warehouse->hasCapacityFor(50));

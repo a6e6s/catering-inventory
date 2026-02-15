@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name')->index();
             $table->string('unit');
             $table->text('description')->nullable();
+            $table->integer('min_stock_level')->default(10);
             $table->boolean('is_active')->default(true)->index();
             $table->timestamps();
             $table->softDeletes();

@@ -164,22 +164,32 @@ Within 3 months of launch:
 # technecal details
 
 ## Core entities (full CRUD)
-php artisan make:filament-resource Warehouse --generate --soft-deletes
-php artisan make:filament-resource DistributionArea --generate --view
-php artisan make:filament-resource RawMaterial --generate --view --soft-deletes
-php artisan make:filament-resource Product --generate --view --soft-deletes
+  php artisan make:filament-resource Warehouse --generate --soft-deletes
+  php artisan make:filament-resource DistributionArea --generate --view
+  php artisan make:filament-resource RawMaterial --generate --view --soft-deletes
+  php artisan make:filament-resource Product --generate --view --soft-deletes
 
 ## Inventory management (specialized workflows)
-php artisan make:filament-resource Batch --generate --view
-php artisan make:filament-resource InventoryTransaction --generate --view
-php artisan make:filament-resource DistributionRecord --generate --view
-php artisan make:filament-resource TransactionApproval --generate --view
+  php artisan make:filament-resource Batch --generate --view
+  php artisan make:filament-resource InventoryTransaction --generate --view
+  php artisan make:filament-resource DistributionRecord --generate --view
+  php artisan make:filament-resource TransactionApproval --generate --view
 
 ## Read-only / support models
-php artisan make:filament-resource ProductStock --view-only
-php artisan make:filament-resource User --generate --view # We'll customize heavily
+  php artisan make:filament-resource ProductStock --view-only
+  php artisan make:filament-resource User --generate --view # We'll customize heavily
 
-
+## Filament resources
+  WarehouseResource
+  RawMaterialResource
+  ProductResource
+  BatchResource
+  ProductStockResource
+  InventoryTransactionResource
+  DistributionAreaResource
+  DistributionRecordResource
+  TransactionApprovalResource
+  UserResource
 
 
 # 📋 PROMPT TEMPLATE (Copy-Paste for Each Module)
@@ -187,7 +197,7 @@ php artisan make:filament-resource User --generate --view # We'll customize heav
 CONTEXT:
 I am building an inventory management system for food distribution using Laravel 11 + Filament v5. The system tracks raw materials → meal preparation → distribution to mosques via warehouses. I need you to enhance ONE specific module with production-ready code.
 
-MODULE TO ENHANCE: Warehouse
+MODULE TO ENHANCE: RawMaterial
 
 TECHNICAL STACK:
 - Laravel 11.0 (PHP 8.3)
@@ -198,13 +208,13 @@ TECHNICAL STACK:
 - Antigravity IDE with Claude Opus 4.6
 
 CURRENT FILES EXISTING:
-- app/Models/Warehouse.php
-- app/Filament/Resources/WarehouseResource.php
-- database/migrations/ ....  warehouse_table.php
+- app/Models/RawMaterial.php
+- app/Filament/Resources/RawMaterialResource.php
+- database/migrations/ ....  RawMaterial_table.php
 
 ENHANCEMENT REQUIREMENTS:
 
-1. MODEL LAYER (Warehouse.php)
+1. MODEL LAYER (RawMaterial.php)
    - Add fillable properties
    - Define ALL relationships (belongsTo, hasMany, belongsToMany, morphTo, etc.)
    - Add accessors/mutators for formatted data
@@ -215,7 +225,7 @@ ENHANCEMENT REQUIREMENTS:
    - Add observer events if needed (creating, created, updating, updated)
    - Add custom methods for business logic
 
-2. RESOURCE LAYER ([WarehouseResource].php)
+2. RESOURCE LAYER (RawMaterialResource.php)
    - Form schema with:
      * All fields with proper validation
      * Conditional fields (live() + visible())
@@ -233,7 +243,7 @@ ENHANCEMENT REQUIREMENTS:
    - Filters with:
      * Date range filters
      * Status filters
-     * Warehouse filters
+     * RawMaterial filters
      * Search filters
    - Actions with:
      * View action (if applicable)
@@ -244,7 +254,7 @@ ENHANCEMENT REQUIREMENTS:
    - Relation managers (if model has relationships)
    - Header actions (create button, import, export)
 
-3. POLICY LAYER (WarehousePolicy.php)
+3. POLICY LAYER (RawMaterialPolicy.php)
    - Define authorization rules for:
      * viewAny
      * view
@@ -254,9 +264,9 @@ ENHANCEMENT REQUIREMENTS:
      * restore
      * forceDelete
    - Role-based checks (admin, warehouse_staff, receiver, compliance_officer)
-   - Warehouse-based scoping (users can only see their assigned warehouse)
+   - RawMaterial-based scoping (users can only see their assigned RawMaterial)
 
-4. FACTORY LAYER (WarehouseFactory.php)
+4. FACTORY LAYER (RawMaterialFactory.php)
    - Define realistic test data
    - Add states for different scenarios (expired, active, etc.)
    - Add relationships (has(), for(), etc.)
@@ -278,41 +288,37 @@ ENHANCEMENT REQUIREMENTS:
 
 8. BUSINESS LOGIC REQUIREMENTS:
 
-    1. TYPE RESTRICTIONS:
-      - Main warehouse can send to ANY warehouse
-      - Association warehouses can ONLY receive from main warehouse
-      - Distribution points can ONLY receive from association warehouses
+    1. UNIT CONVERSIONS:
+      - Support multiple units (kg, liter, gram, piece, box, bag)
+      - Store conversion rates (1kg = 1000g, 1box = 12pieces, etc.)
+      - Auto-convert when displaying in different units
 
-    2. CAPACITY VALIDATION:
-      - Before accepting stock, check if warehouse has capacity
-      - Formula: current_stock + incoming_quantity <= capacity
-      - Show warning if >80% capacity reached
+    2. ACTIVE/INACTIVE RULES:
+      - Inactive raw materials cannot be used in new batches
+      - Inactive raw materials still visible in historical reports
 
-    3. ACTIVE/INACTIVE RULES:
-      - Inactive warehouses cannot receive new stock
-      - Inactive warehouses can still be viewed in reports (archival)
+    3. USAGE TRACKING:
+      - Show which products use this raw material
+      - Show total quantity used in last 30 days
+      - Show current stock across all warehouses
 
-    4. SOFT DELETE BEHAVIOR:
-      - When soft-deleted, all related stock should be transferred to main warehouse
-      - Show confirmation dialog: "Transfer X units to Main Warehouse?"
+    4. EXPIRY ALERTS:
+      - Flag raw materials with batches expiring in <7 days
+      - Show count of expired batches
 
-    5. DASHBOARD METRICS:
-      - Total warehouses count
-      - Active vs inactive breakdown
-      - Capacity utilization chart
-      - Recent warehouse activities
+    5. VALIDATION RULES:
+      - name: required, max:255, unique
+      - unit: required, enum from predefined list
+      - description: nullable, max:65535
 
-    6. VALIDATION RULES:
-      - name: required, max:255, unique (except self)
-      - type: required, must be one of: main, association, distribution_point
-      - location: required, max:255
-      - capacity: nullable, integer, min:0
-      - is_active: boolean
+    6. RELATIONSHIPS TO DISPLAY:
+      - Batches (with expiry dates and quantities)
+      - Products that use this material (via ProductIngredient pivot)
+      - Total stock across all warehouses
 
     7. SPECIAL CONSIDERATIONS:
-      - There MUST be exactly ONE main warehouse at all times
-      - Prevent deletion of the main warehouse
-      - Auto-assign new users to main warehouse if no warehouse specified
+      - Prevent deletion if used in active products
+      - Show warning: "This material is used in X active products"
 
 
 DELIVERABLES:

@@ -24,6 +24,26 @@ class RawMaterialResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    public static function getModelLabel(): string
+    {
+        return __('raw_material.model_label');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('raw_material.plural_model_label');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('raw_material.navigation_group');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('raw_material.plural_model_label');
+    }
+
     public static function form(Schema $schema): Schema
     {
         return RawMaterialForm::configure($schema);
