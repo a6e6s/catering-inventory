@@ -37,6 +37,11 @@ This system digitizes the complete journey of food items—from raw ingredients 
 - **Key feature**:  
   > *Full traceability: Click any meal batch → see exact raw material batches used → supplier details.*
 
+## 📜 Development Rules & Standards
+
+We enforce strict **Filament v5** architecture and **Localization** standards.  
+Please review [DEVELOPMENT_RULES.md](./DEVELOPMENT_RULES.md) before contributing.
+
 ---
 
 ### **Stage 3: Distribution Planning**  

@@ -30,10 +30,11 @@ class DatabaseSeeder extends Seeder
         $user->assignRole('admin');
 
         $this->call([
+            InventoryTransactionPermissionSeeder::class,
             WarehouseSeeder::class,
-            RawMaterialSeeder::class,
-            BatchSeeder::class,
             ProductSeeder::class,
+            BatchSeeder::class,
+            RawMaterialSeeder::class,
         ]);
     }
 }

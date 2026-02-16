@@ -18,6 +18,7 @@ class Batch extends Model
      * @var array
      */
     protected $fillable = [
+        'product_id',
         'raw_material_id',
         'warehouse_id',
         'lot_number',
@@ -48,7 +49,7 @@ class Batch extends Model
         static::created(function (Batch $batch) {
             // Auto-create initial inventory transaction
             $batch->inventoryTransactions()->create([
-                'type' => \App\Enums\InventoryTransactionType::Received,
+                'type' => \App\Enums\InventoryTransactionType::Adjustment,
                 'product_id' => null, // This is raw material batch, not product
                 'raw_material_id' => $batch->raw_material_id, // If transaction supports it, or just rely on batch_id
                 'from_warehouse_id' => null,
@@ -61,6 +62,11 @@ class Batch extends Model
                 'initiated_by' => auth()->id(),
             ]);
         });
+    }
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
     }
 
     public function rawMaterial(): BelongsTo

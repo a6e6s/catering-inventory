@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\InventoryTransactions\Schemas;
 
 use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class InventoryTransactionInfolist
@@ -11,36 +12,46 @@ class InventoryTransactionInfolist
     {
         return $schema
             ->components([
-                TextEntry::make('id')
-                    ->label('ID'),
-                TextEntry::make('type'),
-                TextEntry::make('fromWarehouse.name')
-                    ->label('From warehouse')
-                    ->placeholder('-'),
-                TextEntry::make('toWarehouse.name')
-                    ->label('To warehouse')
-                    ->placeholder('-'),
-                TextEntry::make('product.name')
-                    ->label('Product'),
-                TextEntry::make('batch.id')
-                    ->label('Batch')
-                    ->placeholder('-'),
-                TextEntry::make('quantity')
-                    ->numeric(),
-                TextEntry::make('status'),
-                TextEntry::make('initiated_by')
-                    ->numeric(),
-                TextEntry::make('notes')
-                    ->placeholder('-')
-                    ->columnSpanFull(),
-                TextEntry::make('transaction_date')
-                    ->dateTime(),
-                TextEntry::make('created_at')
-                    ->dateTime()
-                    ->placeholder('-'),
-                TextEntry::make('updated_at')
-                    ->dateTime()
-                    ->placeholder('-'),
+
+                Section::make(__('inventory_transaction.sections.transaction_information'))
+                    ->schema([
+                        TextEntry::make('transaction_date')
+                            ->label(__('inventory_transaction.fields.transaction_date'))
+                            ->dateTime(),
+                        TextEntry::make('type')
+                            ->label(__('inventory_transaction.fields.type'))
+                            ->badge(),
+                        TextEntry::make('status')
+                            ->label(__('inventory_transaction.fields.status'))
+                            ->badge(),
+                        TextEntry::make('initiatedBy.name')
+                            ->label(__('inventory_transaction.fields.initiated_by')),
+                    ])->columns(2),
+
+                Section::make(__('inventory_transaction.sections.movement_details'))
+                    ->schema([
+                        TextEntry::make('fromWarehouse.name')
+                            ->label(__('inventory_transaction.fields.from_warehouse'))
+                            ->placeholder(__('inventory_transaction.placeholders.na')),
+                        TextEntry::make('toWarehouse.name')
+                            ->label(__('inventory_transaction.fields.to_warehouse'))
+                            ->placeholder(__('inventory_transaction.placeholders.na')),
+                        TextEntry::make('product.name')
+                            ->label(__('inventory_transaction.fields.product')),
+                        TextEntry::make('batch.lot_number')
+                            ->label(__('inventory_transaction.fields.batch'))
+                            ->placeholder(__('inventory_transaction.placeholders.na')),
+                        TextEntry::make('quantity')
+                            ->label(__('inventory_transaction.fields.quantity'))
+                            ->numeric(),
+                    ])->columns(2),
+
+                Section::make(__('inventory_transaction.fields.notes'))
+                    ->schema([
+                        TextEntry::make('notes')
+                            ->label(__('inventory_transaction.fields.notes'))
+                            ->markdown(),
+                    ])->collapsible(),
             ]);
     }
 }
