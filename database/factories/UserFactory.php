@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Enums\UserRole;
+use App\Models\Warehouse;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -29,7 +31,40 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'role' => $this->faker->randomElement(UserRole::cases()),
+            'warehouse_id' => Warehouse::factory(),
+            'phone' => fake()->phoneNumber(),
         ];
+    }
+
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => UserRole::Admin,
+            'warehouse_id' => null,
+        ]);
+    }
+
+    public function manager(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => UserRole::WarehouseManager,
+        ]);
+    }
+
+    public function receiver(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => UserRole::Receiver,
+        ]);
+    }
+
+    public function compliance(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => UserRole::ComplianceOfficer,
+            'warehouse_id' => null,
+        ]);
     }
 
     /**

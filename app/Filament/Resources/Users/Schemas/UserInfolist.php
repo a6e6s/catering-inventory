@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
 
@@ -11,25 +12,33 @@ class UserInfolist
     {
         return $schema
             ->components([
-                TextEntry::make('name'),
-                TextEntry::make('email')
-                    ->label('Email address'),
-                TextEntry::make('email_verified_at')
-                    ->dateTime()
-                    ->placeholder('-'),
-                TextEntry::make('created_at')
-                    ->dateTime()
-                    ->placeholder('-'),
-                TextEntry::make('updated_at')
-                    ->dateTime()
-                    ->placeholder('-'),
-                TextEntry::make('warehouse.name')
-                    ->label('Warehouse')
-                    ->placeholder('-'),
-                TextEntry::make('phone')
-                    ->placeholder('-'),
-                TextEntry::make('role')
-                    ->placeholder('-'),
+                \Filament\Infolists\Components\Section::make(__('user.sections.user_details'))
+                    ->schema([
+                        TextEntry::make('name')
+                            ->label(__('user.fields.name')),
+                        TextEntry::make('email')
+                            ->label(__('user.fields.email'))
+                            ->icon('heroicon-m-envelope')
+                            ->copyable(),
+                        TextEntry::make('phone')
+                            ->label(__('user.fields.phone'))
+                            ->icon('heroicon-m-phone'),
+                        TextEntry::make('role')
+                            ->label(__('user.fields.role'))
+                            ->badge(),
+                        TextEntry::make('warehouse.name')
+                            ->label(__('user.fields.warehouse'))
+                            ->placeholder('-'),
+                        TextEntry::make('email_verified_at')
+                            ->label(__('user.fields.email_verified_at'))
+                            ->dateTime()
+                            ->placeholder('Not Verified')
+                            ->badge()
+                            ->color(fn ($state) => $state ? 'success' : 'danger'),
+                        TextEntry::make('created_at')
+                            ->label(__('user.fields.created_at'))
+                            ->dateTime(),
+                    ])->columns(2),
             ]);
     }
 }

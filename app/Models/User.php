@@ -57,6 +57,7 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => \App\Enums\UserRole::class,
         ];
     }
 
@@ -78,5 +79,20 @@ class User extends Authenticatable implements FilamentUser
     public function distributionRecords(): HasMany
     {
         return $this->hasMany(DistributionRecord::class, 'verified_by');
+    }
+
+    public function scopeActive($query)
+    {
+        return $query; // Placeholder if we add 'is_active' column later
+    }
+
+    public function scopeByWarehouse($query, $warehouseId)
+    {
+        return $query->where('warehouse_id', $warehouseId);
+    }
+
+    public function scopeAdmins($query)
+    {
+        return $query->where('role', \App\Enums\UserRole::Admin);
     }
 }

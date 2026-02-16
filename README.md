@@ -202,7 +202,7 @@ Within 3 months of launch:
 CONTEXT:
 I am building an inventory management system for food distribution using Laravel 11 + Filament v5. The system tracks raw materials → meal preparation → distribution to mosques via warehouses. I need you to enhance ONE specific module with production-ready code.
 
-MODULE TO ENHANCE: TransactionApproval
+MODULE TO ENHANCE: User
 
 TECHNICAL STACK:
 - Laravel 11.0 (PHP 8.3)
@@ -213,13 +213,13 @@ TECHNICAL STACK:
 - Antigravity IDE with Claude Opus 4.6
 
 CURRENT FILES EXISTING:
-- app/Models/TransactionApproval.php
-- app/Filament/Resources/TransactionApprovalResource.php
-- database/migrations/ ....  TransactionApproval_table.php
+- app/Models/User.php
+- app/Filament/Resources/UserResource.php
+- database/migrations/ ....  User_table.php
 
 ENHANCEMENT REQUIREMENTS:
 
-1. MODEL LAYER (TransactionApproval.php)
+1. MODEL LAYER (User.php)
    - Add fillable properties
    - Define ALL relationships (belongsTo, hasMany, belongsToMany, morphTo, etc.)
    - Add accessors/mutators for formatted data
@@ -230,7 +230,7 @@ ENHANCEMENT REQUIREMENTS:
    - Add observer events if needed (creating, created, updating, updated)
    - Add custom methods for business logic
 
-2. RESOURCE LAYER (TransactionApprovalResource.php)
+2. RESOURCE LAYER (UserResource.php)
    - Form schema with:
      * All fields with proper validation
      * Conditional fields (live() + visible())
@@ -248,7 +248,7 @@ ENHANCEMENT REQUIREMENTS:
    - Filters with:
      * Date range filters
      * Status filters
-     * TransactionApproval filters
+     * User filters
      * Search filters
    - Actions with:
      * View action (if applicable)
@@ -259,7 +259,7 @@ ENHANCEMENT REQUIREMENTS:
    - Relation managers (if model has relationships)
    - Header actions (create button, import, export)
 
-3. POLICY LAYER (TransactionApprovalPolicy.php)
+3. POLICY LAYER (UserPolicy.php)
    - Define authorization rules for:
      * viewAny
      * view
@@ -269,9 +269,9 @@ ENHANCEMENT REQUIREMENTS:
      * restore
      * forceDelete
    - Role-based checks (admin, warehouse_staff, receiver, compliance_officer)
-   - TransactionApproval-based scoping (users can only see their assigned TransactionApproval)
+   - User-based scoping (users can only see their assigned User)
 
-4. FACTORY LAYER (TransactionApprovalFactory.php)
+4. FACTORY LAYER (UserFactory.php)
    - Define realistic test data
    - Add states for different scenarios (expired, active, etc.)
    - Add relationships (has(), for(), etc.)
@@ -293,48 +293,68 @@ ENHANCEMENT REQUIREMENTS:
 
 8. BUSINESS LOGIC REQUIREMENTS:
 
-    1. MULTI-STEP APPROVAL CHAIN:
-      - Step 1: Receiver confirms receipt (for transfers)
-      - Step 2: Warehouse manager approves (for waste)
-      - Step 3: Compliance officer verifies (for distribution)
-      - Each step has different approver_role
+    1. ROLE DEFINITIONS:
 
-    2. APPROVER ASSIGNMENT:
-      - approver_role determines WHO can approve:
-        * receiver: User with warehouse_id = to_warehouse_id AND role=receiver
-        * warehouse_manager: User with warehouse_id = from_warehouse_id AND role has 'manage-warehouse'
-        * compliance_officer: User with role=compliance_officer
-      - System auto-assigns approver based on role + warehouse context
+      ADMIN:
+      - Full access to all features
+      - Can manage users and roles
+      - Can override approvals
+      - Can view all warehouses
 
-    3. APPROVAL ACTIONS:
-      - approve(): Set status=approved, approved_at=now, execute stock movement
-      - reject(): Set status=rejected, require comments, notify initiator
-      - delegate(): Reassign to another approver (with reason)
+      WAREHOUSE_STAFF (Sender):
+      - Can create transactions from their warehouse
+      - Can view stock in their warehouse only
+      - Cannot approve transactions
+      - Cannot access other warehouses
 
-    4. TIMEOUT HANDLING:
-      - If not approved within 48 hours, send reminder notification
-      - If not approved within 7 days, auto-reject and notify initiator
-      - Allow approver to request extension
+      RECEIVER:
+      - Can approve transactions to their warehouse
+      - Can confirm receipt of transfers
+      - Can create distribution records
+      - Can view stock in their warehouse only
 
-    5. COMMENT REQUIREMENTS:
-      - Comments required for rejection
-      - Comments optional for approval
-      - Show comment history in transaction detail
+      COMPLIANCE_OFFICER:
+      - Can approve waste/disposal transactions
+      - Can verify distribution records
+      - Can view all warehouses (read-only)
+      - Cannot create transactions
+
+    2. WAREHOUSE ASSIGNMENT:
+      - Each user assigned to ONE primary warehouse
+      - Users can only see/edit data for their warehouse (except admin)
+      - Auto-filter all queries by user's warehouse_id
+
+    3. PERMISSION SCOPING:
+      - view-any-warehouses → Admin only
+      - manage-warehouse → Warehouse staff + admin
+      - approve-transactions → Receiver + admin
+      - verify-distributions → Compliance officer + admin
+      - manage-users → Admin only
+
+    4. PASSWORD & SECURITY:
+      - Password reset via email
+      - Force password change on first login
+      - Session timeout after 30 minutes of inactivity
+      - Failed login attempts lock account after 5 tries
+
+    5. PROFILE MANAGEMENT:
+      - Users can edit their own profile (name, phone, password)
+      - Users cannot change their role or warehouse (admin only)
+      - Show last login timestamp
+      - Show account status (active/inactive)
 
     6. VALIDATION RULES:
-      - transaction_id: required, exists, must be status=pending_approval
-      - approver_role: required, enum from predefined list
-      - approver_id: required, exists, must have correct role permissions
-      - step: required, integer, min:1
-      - status: required, enum: pending, approved, rejected, default:pending
-      - comments: required if status=rejected, otherwise nullable
-      - approved_at: nullable, timestamp
+      - name: required, max:255
+      - email: required, email, unique
+      - phone: nullable, regex for phone format
+      - warehouse_id: nullable, exists, must match user's permissions
+      - role: nullable, enum from predefined list (stored in Spatie roles)
 
     7. SPECIAL CONSIDERATIONS:
-      - Prevent duplicate approvals (one approval per step per transaction)
-      - Show approval history timeline in transaction detail
-      - Allow admin to override approval chain (emergency)
-      - Log IP address and device info for audit trail
+      - Prevent deletion of last admin user
+      - Auto-assign role based on registration context
+      - Send welcome email with login instructions
+      - Track user activity for audit trail
 
       
 
