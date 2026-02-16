@@ -20,7 +20,22 @@ class TransactionApprovalResource extends Resource
 {
     protected static ?string $model = TransactionApproval::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCheckBadge;
+
+    public static function getModelLabel(): string
+    {
+        return __('transaction_approval.singular');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('transaction_approval.plural');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('transaction_approval.plural');
+    }
 
     public static function form(Schema $schema): Schema
     {

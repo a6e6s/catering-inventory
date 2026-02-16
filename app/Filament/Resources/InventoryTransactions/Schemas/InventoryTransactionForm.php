@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\InventoryTransactions\Schemas;
 
 use App\Enums\InventoryTransactionStatus;
+use App\Models\ProductStock;
 use App\Enums\InventoryTransactionType;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;

@@ -3,17 +3,16 @@
 namespace App\Filament\Resources\DistributionRecords\Tables;
 
 use App\Models\DistributionRecord;
-use Filament\Actions\Action as HeaderAction; // Alias to avoid conflict if needed, though here we use Table Actions
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ViewAction;
+use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Filament\Forms\Components\Textarea;
 
 class DistributionRecordsTable
 {
@@ -24,12 +23,12 @@ class DistributionRecordsTable
                 TextColumn::make('id')
                     ->label(__('distribution_record.fields.id'))
                     ->searchable()
-                    ->formatStateUsing(fn ($state) => substr($state, 0, 8) . '...')
+                    ->formatStateUsing(fn ($state) => substr($state, 0, 8).'...')
                     ->fontFamily(\Filament\Support\Enums\FontFamily::Mono),
                 TextColumn::make('transaction.id')
                     ->searchable()
                     ->label(__('distribution_record.fields.transaction'))
-                    ->formatStateUsing(fn ($state) => substr($state, 0, 8) . '...')
+                    ->formatStateUsing(fn ($state) => substr($state, 0, 8).'...')
                     ->fontFamily(\Filament\Support\Enums\FontFamily::Mono),
                 TextColumn::make('distributionArea.name')
                     ->searchable()

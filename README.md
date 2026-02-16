@@ -202,7 +202,7 @@ Within 3 months of launch:
 CONTEXT:
 I am building an inventory management system for food distribution using Laravel 11 + Filament v5. The system tracks raw materials → meal preparation → distribution to mosques via warehouses. I need you to enhance ONE specific module with production-ready code.
 
-MODULE TO ENHANCE: DistributionRecord
+MODULE TO ENHANCE: TransactionApproval
 
 TECHNICAL STACK:
 - Laravel 11.0 (PHP 8.3)
@@ -213,13 +213,13 @@ TECHNICAL STACK:
 - Antigravity IDE with Claude Opus 4.6
 
 CURRENT FILES EXISTING:
-- app/Models/DistributionRecord.php
-- app/Filament/Resources/DistributionRecordResource.php
-- database/migrations/ ....  DistributionRecord_table.php
+- app/Models/TransactionApproval.php
+- app/Filament/Resources/TransactionApprovalResource.php
+- database/migrations/ ....  TransactionApproval_table.php
 
 ENHANCEMENT REQUIREMENTS:
 
-1. MODEL LAYER (DistributionRecord.php)
+1. MODEL LAYER (TransactionApproval.php)
    - Add fillable properties
    - Define ALL relationships (belongsTo, hasMany, belongsToMany, morphTo, etc.)
    - Add accessors/mutators for formatted data
@@ -230,7 +230,7 @@ ENHANCEMENT REQUIREMENTS:
    - Add observer events if needed (creating, created, updating, updated)
    - Add custom methods for business logic
 
-2. RESOURCE LAYER (DistributionRecordResource.php)
+2. RESOURCE LAYER (TransactionApprovalResource.php)
    - Form schema with:
      * All fields with proper validation
      * Conditional fields (live() + visible())
@@ -248,7 +248,7 @@ ENHANCEMENT REQUIREMENTS:
    - Filters with:
      * Date range filters
      * Status filters
-     * DistributionRecord filters
+     * TransactionApproval filters
      * Search filters
    - Actions with:
      * View action (if applicable)
@@ -259,7 +259,7 @@ ENHANCEMENT REQUIREMENTS:
    - Relation managers (if model has relationships)
    - Header actions (create button, import, export)
 
-3. POLICY LAYER (DistributionRecordPolicy.php)
+3. POLICY LAYER (TransactionApprovalPolicy.php)
    - Define authorization rules for:
      * viewAny
      * view
@@ -269,9 +269,9 @@ ENHANCEMENT REQUIREMENTS:
      * restore
      * forceDelete
    - Role-based checks (admin, warehouse_staff, receiver, compliance_officer)
-   - DistributionRecord-based scoping (users can only see their assigned DistributionRecord)
+   - TransactionApproval-based scoping (users can only see their assigned TransactionApproval)
 
-4. FACTORY LAYER (DistributionRecordFactory.php)
+4. FACTORY LAYER (TransactionApprovalFactory.php)
    - Define realistic test data
    - Add states for different scenarios (expired, active, etc.)
    - Add relationships (has(), for(), etc.)
@@ -293,49 +293,48 @@ ENHANCEMENT REQUIREMENTS:
 
 8. BUSINESS LOGIC REQUIREMENTS:
 
-      1. LINKED TO TRANSACTION:
-        - Each DistributionRecord belongs to ONE InventoryTransaction of type 'distribution'
-        - Cannot create DistributionRecord without linked transaction
-        - Auto-create when distribution transaction is approved
+    1. MULTI-STEP APPROVAL CHAIN:
+      - Step 1: Receiver confirms receipt (for transfers)
+      - Step 2: Warehouse manager approves (for waste)
+      - Step 3: Compliance officer verifies (for distribution)
+      - Each step has different approver_role
 
-      2. BENEFICIARY TRACKING:
-        - beneficiaries_served: integer, estimated count
-        - Calculate from quantity distributed (e.g., 100 meal packs × 2 people per pack = 200 served)
-        - Allow manual override if actual count differs
+    2. APPROVER ASSIGNMENT:
+      - approver_role determines WHO can approve:
+        * receiver: User with warehouse_id = to_warehouse_id AND role=receiver
+        * warehouse_manager: User with warehouse_id = from_warehouse_id AND role has 'manage-warehouse'
+        * compliance_officer: User with role=compliance_officer
+      - System auto-assigns approver based on role + warehouse context
 
-      3. PHOTO EVIDENCE (COMPLIANCE):
-        - Allow multiple photo uploads (up to 5)
-        - Store photo URLs in JSON array
-        - Show photo gallery in detail view
-        - Require at least 1 photo for verification
-        - Compress photos to save storage
+    3. APPROVAL ACTIONS:
+      - approve(): Set status=approved, approved_at=now, execute stock movement
+      - reject(): Set status=rejected, require comments, notify initiator
+      - delegate(): Reassign to another approver (with reason)
 
-      4. VERIFICATION WORKFLOW:
-        - Created by association staff
-        - Verified by compliance officer
-        - Show verification status: pending, verified, rejected
-        - Allow compliance officer to add verification comments
+    4. TIMEOUT HANDLING:
+      - If not approved within 48 hours, send reminder notification
+      - If not approved within 7 days, auto-reject and notify initiator
+      - Allow approver to request extension
 
-      5. REPORTING METRICS:
-        - Total beneficiaries served per area
-        - Total meals distributed per area
-        - Distribution frequency per area
-        - Photo verification rate
+    5. COMMENT REQUIREMENTS:
+      - Comments required for rejection
+      - Comments optional for approval
+      - Show comment history in transaction detail
 
-      6. VALIDATION RULES:
-        - transaction_id: required, exists, must be type 'distribution'
-        - distribution_area_id: required, exists
-        - beneficiaries_served: required, integer, min:1
-        - photos: nullable, array, max:5 items
-        - verified_by: nullable, exists in users table
-        - verified_at: nullable, timestamp
-        - notes: nullable, max:65535
+    6. VALIDATION RULES:
+      - transaction_id: required, exists, must be status=pending_approval
+      - approver_role: required, enum from predefined list
+      - approver_id: required, exists, must have correct role permissions
+      - step: required, integer, min:1
+      - status: required, enum: pending, approved, rejected, default:pending
+      - comments: required if status=rejected, otherwise nullable
+      - approved_at: nullable, timestamp
 
-      7. SPECIAL CONSIDERATIONS:
-        - Prevent editing after verification
-        - Allow compliance officer to reject and request corrections
-        - Generate compliance report PDF for donors
-        - Export data for government reporting
+    7. SPECIAL CONSIDERATIONS:
+      - Prevent duplicate approvals (one approval per step per transaction)
+      - Show approval history timeline in transaction detail
+      - Allow admin to override approval chain (emergency)
+      - Log IP address and device info for audit trail
 
       
 

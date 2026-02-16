@@ -14,25 +14,47 @@ class TransactionApprovalForm
     {
         return $schema
             ->components([
-                Select::make('transaction_id')
-                    ->relationship('transaction', 'id')
-                    ->required(),
-                TextInput::make('approver_role')
-                    ->required(),
-                Select::make('approver_id')
-                    ->relationship('approver', 'name')
-                    ->required(),
-                TextInput::make('step')
-                    ->required()
-                    ->numeric()
-                    ->default(1),
-                TextInput::make('status')
-                    ->required()
-                    ->default('pending'),
-                Textarea::make('comments')
-                    ->default(null)
-                    ->columnSpanFull(),
-                DateTimePicker::make('approved_at'),
+                \Filament\Schemas\Components\Section::make(__('transaction_approval.sections.approval_details'))
+                    ->schema([
+                        Select::make('transaction_id')
+                            ->relationship('transaction', 'id')
+                            ->required()
+                            ->disabled()
+                            ->label(__('transaction_approval.fields.transaction_id')),
+                        Select::make('approver_role')
+                            ->options(\App\Enums\TransactionApprovalRole::class)
+                            ->required()
+                            ->disabled()
+                            ->label(__('transaction_approval.fields.approver_role')),
+                        Select::make('approver_id')
+                            ->relationship('approver', 'name')
+                            ->required()
+                            ->disabled()
+                            ->label(__('transaction_approval.fields.approver_id')),
+                        TextInput::make('step')
+                            ->required()
+                            ->numeric()
+                            ->disabled()
+                            ->label(__('transaction_approval.fields.step')),
+                        Select::make('status')
+                            ->options(\App\Enums\TransactionApprovalStatus::class)
+                            ->required()
+                            ->disabled()
+                            ->label(__('transaction_approval.fields.status')),
+                        DateTimePicker::make('approved_at')
+                            ->disabled()
+                            ->label(__('transaction_approval.fields.approved_at')),
+                    ])->columns(2),
+
+                \Filament\Schemas\Components\Section::make(__('transaction_approval.sections.comments'))
+                    ->schema([
+                        Textarea::make('comments')
+                            ->label(__('transaction_approval.fields.comments'))
+                            ->placeholder(__('transaction_approval.placeholders.comments'))
+                            ->rows(3)
+                            ->columnSpanFull()
+                            ->disabled(fn ($record) => $record && $record->status !== \App\Enums\TransactionApprovalStatus::Pending),
+                    ]),
             ]);
     }
 }
