@@ -22,6 +22,26 @@ class ProductStockResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    public static function getModelLabel(): string
+    {
+        return __('product_stock.single');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('product_stock.plural');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('product_stock.navigation_label');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('warehouse.navigation_group');
+    }
+
     public static function form(Schema $schema): Schema
     {
         return ProductStockForm::configure($schema);

@@ -197,7 +197,7 @@ Within 3 months of launch:
 CONTEXT:
 I am building an inventory management system for food distribution using Laravel 11 + Filament v5. The system tracks raw materials → meal preparation → distribution to mosques via warehouses. I need you to enhance ONE specific module with production-ready code.
 
-MODULE TO ENHANCE: PRODUCT
+MODULE TO ENHANCE: InventoryTransaction
 
 TECHNICAL STACK:
 - Laravel 11.0 (PHP 8.3)
@@ -208,13 +208,13 @@ TECHNICAL STACK:
 - Antigravity IDE with Claude Opus 4.6
 
 CURRENT FILES EXISTING:
-- app/Models/PRODUCT.php
-- app/Filament/Resources/PRODUCTResource.php
-- database/migrations/ ....  PRODUCT_table.php
+- app/Models/InventoryTransaction.php
+- app/Filament/Resources/InventoryTransactionResource.php
+- database/migrations/ ....  InventoryTransaction_table.php
 
 ENHANCEMENT REQUIREMENTS:
 
-1. MODEL LAYER (PRODUCT.php)
+1. MODEL LAYER (InventoryTransaction.php)
    - Add fillable properties
    - Define ALL relationships (belongsTo, hasMany, belongsToMany, morphTo, etc.)
    - Add accessors/mutators for formatted data
@@ -225,7 +225,7 @@ ENHANCEMENT REQUIREMENTS:
    - Add observer events if needed (creating, created, updating, updated)
    - Add custom methods for business logic
 
-2. RESOURCE LAYER (PRODUCTResource.php)
+2. RESOURCE LAYER (InventoryTransactionResource.php)
    - Form schema with:
      * All fields with proper validation
      * Conditional fields (live() + visible())
@@ -243,7 +243,7 @@ ENHANCEMENT REQUIREMENTS:
    - Filters with:
      * Date range filters
      * Status filters
-     * PRODUCT filters
+     * InventoryTransaction filters
      * Search filters
    - Actions with:
      * View action (if applicable)
@@ -254,7 +254,7 @@ ENHANCEMENT REQUIREMENTS:
    - Relation managers (if model has relationships)
    - Header actions (create button, import, export)
 
-3. POLICY LAYER (PRODUCTPolicy.php)
+3. POLICY LAYER (InventoryTransactionPolicy.php)
    - Define authorization rules for:
      * viewAny
      * view
@@ -264,9 +264,9 @@ ENHANCEMENT REQUIREMENTS:
      * restore
      * forceDelete
    - Role-based checks (admin, warehouse_staff, receiver, compliance_officer)
-   - PRODUCT-based scoping (users can only see their assigned PRODUCT)
+   - InventoryTransaction-based scoping (users can only see their assigned InventoryTransaction)
 
-4. FACTORY LAYER (PRODUCTFactory.php)
+4. FACTORY LAYER (InventoryTransactionFactory.php)
    - Define realistic test data
    - Add states for different scenarios (expired, active, etc.)
    - Add relationships (has(), for(), etc.)
@@ -288,49 +288,82 @@ ENHANCEMENT REQUIREMENTS:
 
 8. BUSINESS LOGIC REQUIREMENTS:
 
-    1. PRODUCT INGREDIENTS (MANY-TO-MANY):
-      - Each product has multiple raw materials
-      - Each ingredient has quantity_required and unit
-      - Support fractional quantities (e.g., 0.25kg rice per meal)
-      - Show total cost calculation based on ingredient costs
+    1. TRANSACTION TYPES & RULES:
 
-    2. RECIPE VERSIONING:
-      - Track recipe changes over time
-      - Show which version was used for each batch
-      - Allow reverting to previous recipe versions
+      TRANSFER (Main → Association):
+      - Requires: from_warehouse_id, to_warehouse_id, product_id, quantity
+      - Validation: Stock must exist at from_warehouse
+      - Approval: Receiver at to_warehouse must confirm
+      - Effect: Decrease from_warehouse stock, increase to_warehouse stock
 
-    3. UNIT STANDARDIZATION:
-      - Products measured in: portion, tray, box, package, meal_pack
-      - Define standard portion sizes (e.g., 1 meal_pack = 2 portions)
+      RETURN (Association → Main):
+      - Requires: from_warehouse_id, to_warehouse_id (must be main), product_id, quantity
+      - Validation: Stock must exist at from_warehouse
+      - Approval: Main warehouse staff must confirm
+      - Effect: Decrease from_warehouse stock, increase main warehouse stock
 
-    4. ACTIVE/INACTIVE RULES:
-      - Inactive products cannot be used in new transactions
-      - Inactive products still visible in historical reports
+      WASTE/DISPOSAL:
+      - Requires: from_warehouse_id, product_id, quantity, reason
+      - Validation: Stock must exist at from_warehouse
+      - Approval: Compliance officer must approve
+      - Effect: Decrease stock, create waste record, no increase anywhere
 
-    5. PREPARATION METRICS:
-      - Track preparation_time in minutes
-      - Calculate production capacity per hour
-      - Show estimated completion time for large orders
+      DISTRIBUTION (Final to Beneficiaries):
+      - Requires: from_warehouse_id, product_id, quantity, distribution_area_id
+      - Validation: Stock must exist at from_warehouse
+      - Approval: Receiver confirms, then verified by compliance officer
+      - Effect: Decrease stock, create DistributionRecord, no increase anywhere
+
+      ADJUSTMENT (Manual Correction):
+      - Requires: warehouse_id, product_id, quantity (positive or negative), reason
+      - Validation: Admin only
+      - Approval: Admin approval required
+      - Effect: Direct stock adjustment
+
+    2. STATUS WORKFLOW:
+      draft → pending_approval → [approved/rejected] → completed
+      - draft: Created but not submitted
+      - pending_approval: Waiting for approver
+      - approved: Approved but not yet executed (for scheduled transfers)
+      - rejected: Rejected by approver (with comments)
+      - completed: Stock moved, transaction finalized
+
+    3. STOCK VALIDATION (CRITICAL):
+      - Before approval: Check if sufficient stock exists at from_warehouse
+      - Use database transaction to prevent race conditions
+      - Rollback if any validation fails
+      - Lock stock records during validation (pessimistic locking)
+
+    4. APPROVAL WORKFLOW:
+      - Single-step for transfers (receiver confirms)
+      - Multi-step for waste (warehouse manager + compliance officer)
+      - Auto-approve if initiated by admin (configurable)
+      - Timeout: Auto-reject if not approved within 48 hours
+
+    5. AUDIT TRAIL:
+      - Log who created, who approved, who rejected
+      - Log timestamps for each status change
+      - Log actual received quantity vs expected quantity
+      - Store comments from approvers
 
     6. VALIDATION RULES:
-      - name: required, max:255, unique
-      - unit: required, enum from predefined list
-      - description: nullable, max:65535
-      - preparation_time: nullable, integer, min:1
-      - is_active: boolean, default:true
+      - type: required, enum from predefined list
+      - from_warehouse_id: required unless type=waste/distribution
+      - to_warehouse_id: required for transfer/return, null for waste/distribution
+      - product_id: required, exists
+      - batch_id: nullable, exists, must match product and warehouse
+      - quantity: required, decimal:10,2, min:0.01
+      - status: required, enum, default:draft
+      - initiated_by: required, exists in users table
+      - notes: nullable, max:65535
 
-    7. RELATION MANAGER REQUIREMENTS:
-      - ProductIngredient relation manager with:
-        * Add/Edit/Delete ingredients
-        * Drag-and-drop reordering
-        * Quantity input with unit selector
-        * Real-time total cost calculation
+    7. SPECIAL CONSIDERATIONS:
+      - Prevent deletion of completed transactions
+      - Allow voiding of draft/pending transactions
+      - Show variance report: expected vs actual received quantities
+      - Generate PDF receipt for completed transactions
 
-    8. SPECIAL CONSIDERATIONS:
-      - Prevent deletion if used in active transactions
-      - Show warning: "This product has X active transactions"
-      - Auto-calculate nutritional info from ingredients (future feature)
-
+      
 
 DELIVERABLES:
 - Complete, production-ready code for all files
