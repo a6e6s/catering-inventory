@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             InventoryTransactionPermissionSeeder::class,
+            DistributionRecordPermissionSeeder::class,
             WarehouseSeeder::class,
             ProductSeeder::class,
             BatchSeeder::class,

@@ -202,7 +202,7 @@ Within 3 months of launch:
 CONTEXT:
 I am building an inventory management system for food distribution using Laravel 11 + Filament v5. The system tracks raw materials → meal preparation → distribution to mosques via warehouses. I need you to enhance ONE specific module with production-ready code.
 
-MODULE TO ENHANCE: InventoryTransaction
+MODULE TO ENHANCE: DistributionRecord
 
 TECHNICAL STACK:
 - Laravel 11.0 (PHP 8.3)
@@ -213,13 +213,13 @@ TECHNICAL STACK:
 - Antigravity IDE with Claude Opus 4.6
 
 CURRENT FILES EXISTING:
-- app/Models/InventoryTransaction.php
-- app/Filament/Resources/InventoryTransactionResource.php
-- database/migrations/ ....  InventoryTransaction_table.php
+- app/Models/DistributionRecord.php
+- app/Filament/Resources/DistributionRecordResource.php
+- database/migrations/ ....  DistributionRecord_table.php
 
 ENHANCEMENT REQUIREMENTS:
 
-1. MODEL LAYER (InventoryTransaction.php)
+1. MODEL LAYER (DistributionRecord.php)
    - Add fillable properties
    - Define ALL relationships (belongsTo, hasMany, belongsToMany, morphTo, etc.)
    - Add accessors/mutators for formatted data
@@ -230,7 +230,7 @@ ENHANCEMENT REQUIREMENTS:
    - Add observer events if needed (creating, created, updating, updated)
    - Add custom methods for business logic
 
-2. RESOURCE LAYER (InventoryTransactionResource.php)
+2. RESOURCE LAYER (DistributionRecordResource.php)
    - Form schema with:
      * All fields with proper validation
      * Conditional fields (live() + visible())
@@ -248,7 +248,7 @@ ENHANCEMENT REQUIREMENTS:
    - Filters with:
      * Date range filters
      * Status filters
-     * InventoryTransaction filters
+     * DistributionRecord filters
      * Search filters
    - Actions with:
      * View action (if applicable)
@@ -259,7 +259,7 @@ ENHANCEMENT REQUIREMENTS:
    - Relation managers (if model has relationships)
    - Header actions (create button, import, export)
 
-3. POLICY LAYER (InventoryTransactionPolicy.php)
+3. POLICY LAYER (DistributionRecordPolicy.php)
    - Define authorization rules for:
      * viewAny
      * view
@@ -269,9 +269,9 @@ ENHANCEMENT REQUIREMENTS:
      * restore
      * forceDelete
    - Role-based checks (admin, warehouse_staff, receiver, compliance_officer)
-   - InventoryTransaction-based scoping (users can only see their assigned InventoryTransaction)
+   - DistributionRecord-based scoping (users can only see their assigned DistributionRecord)
 
-4. FACTORY LAYER (InventoryTransactionFactory.php)
+4. FACTORY LAYER (DistributionRecordFactory.php)
    - Define realistic test data
    - Add states for different scenarios (expired, active, etc.)
    - Add relationships (has(), for(), etc.)
@@ -293,80 +293,49 @@ ENHANCEMENT REQUIREMENTS:
 
 8. BUSINESS LOGIC REQUIREMENTS:
 
-    1. TRANSACTION TYPES & RULES:
+      1. LINKED TO TRANSACTION:
+        - Each DistributionRecord belongs to ONE InventoryTransaction of type 'distribution'
+        - Cannot create DistributionRecord without linked transaction
+        - Auto-create when distribution transaction is approved
 
-      TRANSFER (Main → Association):
-      - Requires: from_warehouse_id, to_warehouse_id, product_id, quantity
-      - Validation: Stock must exist at from_warehouse
-      - Approval: Receiver at to_warehouse must confirm
-      - Effect: Decrease from_warehouse stock, increase to_warehouse stock
+      2. BENEFICIARY TRACKING:
+        - beneficiaries_served: integer, estimated count
+        - Calculate from quantity distributed (e.g., 100 meal packs × 2 people per pack = 200 served)
+        - Allow manual override if actual count differs
 
-      RETURN (Association → Main):
-      - Requires: from_warehouse_id, to_warehouse_id (must be main), product_id, quantity
-      - Validation: Stock must exist at from_warehouse
-      - Approval: Main warehouse staff must confirm
-      - Effect: Decrease from_warehouse stock, increase main warehouse stock
+      3. PHOTO EVIDENCE (COMPLIANCE):
+        - Allow multiple photo uploads (up to 5)
+        - Store photo URLs in JSON array
+        - Show photo gallery in detail view
+        - Require at least 1 photo for verification
+        - Compress photos to save storage
 
-      WASTE/DISPOSAL:
-      - Requires: from_warehouse_id, product_id, quantity, reason
-      - Validation: Stock must exist at from_warehouse
-      - Approval: Compliance officer must approve
-      - Effect: Decrease stock, create waste record, no increase anywhere
+      4. VERIFICATION WORKFLOW:
+        - Created by association staff
+        - Verified by compliance officer
+        - Show verification status: pending, verified, rejected
+        - Allow compliance officer to add verification comments
 
-      DISTRIBUTION (Final to Beneficiaries):
-      - Requires: from_warehouse_id, product_id, quantity, distribution_area_id
-      - Validation: Stock must exist at from_warehouse
-      - Approval: Receiver confirms, then verified by compliance officer
-      - Effect: Decrease stock, create DistributionRecord, no increase anywhere
+      5. REPORTING METRICS:
+        - Total beneficiaries served per area
+        - Total meals distributed per area
+        - Distribution frequency per area
+        - Photo verification rate
 
-      ADJUSTMENT (Manual Correction):
-      - Requires: warehouse_id, product_id, quantity (positive or negative), reason
-      - Validation: Admin only
-      - Approval: Admin approval required
-      - Effect: Direct stock adjustment
+      6. VALIDATION RULES:
+        - transaction_id: required, exists, must be type 'distribution'
+        - distribution_area_id: required, exists
+        - beneficiaries_served: required, integer, min:1
+        - photos: nullable, array, max:5 items
+        - verified_by: nullable, exists in users table
+        - verified_at: nullable, timestamp
+        - notes: nullable, max:65535
 
-    2. STATUS WORKFLOW:
-      draft → pending_approval → [approved/rejected] → completed
-      - draft: Created but not submitted
-      - pending_approval: Waiting for approver
-      - approved: Approved but not yet executed (for scheduled transfers)
-      - rejected: Rejected by approver (with comments)
-      - completed: Stock moved, transaction finalized
-
-    3. STOCK VALIDATION (CRITICAL):
-      - Before approval: Check if sufficient stock exists at from_warehouse
-      - Use database transaction to prevent race conditions
-      - Rollback if any validation fails
-      - Lock stock records during validation (pessimistic locking)
-
-    4. APPROVAL WORKFLOW:
-      - Single-step for transfers (receiver confirms)
-      - Multi-step for waste (warehouse manager + compliance officer)
-      - Auto-approve if initiated by admin (configurable)
-      - Timeout: Auto-reject if not approved within 48 hours
-
-    5. AUDIT TRAIL:
-      - Log who created, who approved, who rejected
-      - Log timestamps for each status change
-      - Log actual received quantity vs expected quantity
-      - Store comments from approvers
-
-    6. VALIDATION RULES:
-      - type: required, enum from predefined list
-      - from_warehouse_id: required unless type=waste/distribution
-      - to_warehouse_id: required for transfer/return, null for waste/distribution
-      - product_id: required, exists
-      - batch_id: nullable, exists, must match product and warehouse
-      - quantity: required, decimal:10,2, min:0.01
-      - status: required, enum, default:draft
-      - initiated_by: required, exists in users table
-      - notes: nullable, max:65535
-
-    7. SPECIAL CONSIDERATIONS:
-      - Prevent deletion of completed transactions
-      - Allow voiding of draft/pending transactions
-      - Show variance report: expected vs actual received quantities
-      - Generate PDF receipt for completed transactions
+      7. SPECIAL CONSIDERATIONS:
+        - Prevent editing after verification
+        - Allow compliance officer to reject and request corrections
+        - Generate compliance report PDF for donors
+        - Export data for government reporting
 
       
 

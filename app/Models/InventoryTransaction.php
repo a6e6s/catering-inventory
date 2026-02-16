@@ -124,14 +124,15 @@ class InventoryTransaction extends Model
         $warehouseId = $this->from_warehouse_id;
 
         // For distribution/waste/transfer/return, we need source stock
-        if (!$warehouseId) {
-             if ($this->type === InventoryTransactionType::Adjustment && $this->quantity < 0) {
-                  // Negative adjustment might imply reducing from a specific warehouse
-                  // If from_warehouse_id is set, check it. If not, maybe it's global? 
-                  // Let's enforce from_warehouse_id for negative adjustments in rules.
-                  throw ValidationException::withMessages(['from_warehouse_id' => 'Source warehouse required for negative adjustment']);
-             }
-             return; 
+        if (! $warehouseId) {
+            if ($this->type === InventoryTransactionType::Adjustment && $this->quantity < 0) {
+                // Negative adjustment might imply reducing from a specific warehouse
+                // If from_warehouse_id is set, check it. If not, maybe it's global?
+                // Let's enforce from_warehouse_id for negative adjustments in rules.
+                throw ValidationException::withMessages(['from_warehouse_id' => 'Source warehouse required for negative adjustment']);
+            }
+
+            return;
         }
 
         $query = ProductStock::where('product_id', $this->product_id)
@@ -145,9 +146,9 @@ class InventoryTransaction extends Model
         $stock = $query->lockForUpdate()->first();
 
         // Check if stock record exists and has enough quantity
-        if (!$stock || $stock->quantity < $this->quantity) {
-             throw ValidationException::withMessages([
-                'quantity' => "Insufficient stock at source warehouse. Available: " . ($stock?->quantity ?? 0),
+        if (! $stock || $stock->quantity < $this->quantity) {
+            throw ValidationException::withMessages([
+                'quantity' => 'Insufficient stock at source warehouse. Available: '.($stock?->quantity ?? 0),
             ]);
         }
     }
@@ -157,29 +158,29 @@ class InventoryTransaction extends Model
         // Only allow execution if status is approved (for scheduled) or we are completing it now.
         // The flow is: Approve -> Complete (triggers execution)
         // Or if auto-completion is desired, it happens here.
-        
+
         \DB::transaction(function () {
-             $this->validateStockAvailability();
+            $this->validateStockAvailability();
 
-             // 1. Decrement from Source (Transfer, Return, Waste, Distribution, Negative Adjustment)
-             if ($this->from_warehouse_id) {
-                 $this->decrementStock($this->from_warehouse_id);
-             }
+            // 1. Decrement from Source (Transfer, Return, Waste, Distribution, Negative Adjustment)
+            if ($this->from_warehouse_id) {
+                $this->decrementStock($this->from_warehouse_id);
+            }
 
-             // 2. Increment at Destination (Transfer, Return)
-             if ($this->to_warehouse_id && in_array($this->type, [InventoryTransactionType::Transfer, InventoryTransactionType::Return])) {
-                 $this->incrementStock($this->to_warehouse_id);
-             }
-             
-             // 3. Handle Distribution Record
-             if ($this->type === InventoryTransactionType::Distribution) {
-                 $this->createDistributionRecord();
-             }
+            // 2. Increment at Destination (Transfer, Return)
+            if ($this->to_warehouse_id && in_array($this->type, [InventoryTransactionType::Transfer, InventoryTransactionType::Return])) {
+                $this->incrementStock($this->to_warehouse_id);
+            }
 
-             // 4. Mark Completed if not already
-             if ($this->status !== InventoryTransactionStatus::Completed) {
-                 $this->update(['status' => InventoryTransactionStatus::Completed]);
-             }
+            // 3. Handle Distribution Record
+            if ($this->type === InventoryTransactionType::Distribution) {
+                $this->createDistributionRecord();
+            }
+
+            // 4. Mark Completed if not already
+            if ($this->status !== InventoryTransactionStatus::Completed) {
+                $this->update(['status' => InventoryTransactionStatus::Completed]);
+            }
         });
     }
 
@@ -191,17 +192,17 @@ class InventoryTransaction extends Model
             'batch_id' => $this->batch_id,
         ], ['quantity' => 0]);
 
-        // We already locked in validateStockAvailability if within same transaction? 
-        // query->lockForUpdate() in validation locks the row. 
+        // We already locked in validateStockAvailability if within same transaction?
+        // query->lockForUpdate() in validation locks the row.
         // Here we read again. To be safe/correct given we just want to update:
         // $stock->decrement... works directly on DB.
-        
+
         $stock->decrement('quantity', $this->quantity);
     }
 
     protected function incrementStock($warehouseId)
     {
-         $stock = ProductStock::firstOrCreate([
+        $stock = ProductStock::firstOrCreate([
             'product_id' => $this->product_id,
             'warehouse_id' => $warehouseId,
             'batch_id' => $this->batch_id,
@@ -209,7 +210,7 @@ class InventoryTransaction extends Model
 
         $stock->increment('quantity', $this->quantity);
     }
-    
+
     protected function createDistributionRecord()
     {
         // Check if already exists to avoid duplicates if re-run
@@ -222,9 +223,9 @@ class InventoryTransaction extends Model
             'product_id' => $this->product_id,
             'batch_id' => $this->batch_id,
             'quantity' => $this->quantity,
+            'beneficiaries_served' => (int) $this->quantity, // Default to quantity, can be updated later
             'distributed_at' => now(),
             'notes' => $this->notes,
-            // 'beneficiary_count' -> could be added to transaction or derived
         ]);
     }
 }

@@ -2,12 +2,18 @@
 
 namespace App\Filament\Resources\DistributionRecords\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
+use App\Models\DistributionRecord;
+use Filament\Actions\Action as HeaderAction; // Alias to avoid conflict if needed, though here we use Table Actions
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Filament\Forms\Components\Textarea;
 
 class DistributionRecordsTable
 {
@@ -16,35 +22,65 @@ class DistributionRecordsTable
         return $table
             ->columns([
                 TextColumn::make('id')
-                    ->label('ID'),
+                    ->label(__('distribution_record.fields.id'))
+                    ->searchable()
+                    ->formatStateUsing(fn ($state) => substr($state, 0, 8) . '...')
+                    ->fontFamily(\Filament\Support\Enums\FontFamily::Mono),
                 TextColumn::make('transaction.id')
-                    ->searchable(),
+                    ->searchable()
+                    ->label(__('distribution_record.fields.transaction'))
+                    ->formatStateUsing(fn ($state) => substr($state, 0, 8) . '...')
+                    ->fontFamily(\Filament\Support\Enums\FontFamily::Mono),
                 TextColumn::make('distributionArea.name')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable()
+                    ->label(__('distribution_record.fields.distribution_area')),
                 TextColumn::make('beneficiaries_served')
                     ->numeric()
-                    ->sortable(),
-                TextColumn::make('verified_by')
-                    ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->label(__('distribution_record.fields.beneficiaries_served')),
+                TextColumn::make('status')
+                    ->badge(),
+                ImageColumn::make('photos')
+                    ->label(__('distribution_record.fields.photos'))
+                    ->circular()
+                    ->stacked()
+                    ->limit(3),
                 TextColumn::make('verified_at')
                     ->dateTime()
-                    ->sortable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->label(__('distribution_record.fields.verified_at')),
             ])
             ->filters([
-                //
+                SelectFilter::make('status')
+                    ->label(__('inventory_transaction.fields.status')) // Reusing generic status label or creating specific one
+                    ->options(\App\Enums\DistributionRecordStatus::class),
+                SelectFilter::make('distribution_area_id')
+                    ->relationship('distributionArea', 'name')
+                    ->label(__('distribution_record.fields.distribution_area')),
             ])
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
+                Action::make('verify')
+                    ->label(__('distribution_record.actions.verify'))
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->action(fn (DistributionRecord $record) => $record->verify(auth()->user()))
+                    ->visible(fn (DistributionRecord $record) => auth()->user()->can('verify', $record)),
+                Action::make('reject')
+                    ->label(__('distribution_record.actions.reject'))
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->form([
+                        Textarea::make('reason')
+                            ->label(__('distribution_record.fields.rejection_reason'))
+                            ->required(),
+                    ])
+                    ->action(fn (DistributionRecord $record, array $data) => $record->reject(auth()->user(), $data['reason']))
+                    ->visible(fn (DistributionRecord $record) => auth()->user()->can('reject', $record)),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

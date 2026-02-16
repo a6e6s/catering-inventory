@@ -24,6 +24,8 @@ class DistributionRecord extends Model
         'verified_by',
         'verified_at',
         'notes',
+        'status',
+        'rejection_reason',
     ];
 
     /**
@@ -36,8 +38,26 @@ class DistributionRecord extends Model
         return [
             'photos' => 'array',
             'verified_at' => 'timestamp',
+            'status' => \App\Enums\DistributionRecordStatus::class,
         ];
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->status)) {
+                $model->status = \App\Enums\DistributionRecordStatus::Pending;
+            }
+        });
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
 
     public function transaction(): BelongsTo
     {
@@ -52,5 +72,52 @@ class DistributionRecord extends Model
     public function verifiedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'verified_by');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Scopes
+    |--------------------------------------------------------------------------
+    */
+
+    public function scopePending($query)
+    {
+        return $query->where('status', \App\Enums\DistributionRecordStatus::Pending);
+    }
+
+    public function scopeVerified($query)
+    {
+        return $query->where('status', \App\Enums\DistributionRecordStatus::Verified);
+    }
+
+    public function scopeRejected($query)
+    {
+        return $query->where('status', \App\Enums\DistributionRecordStatus::Rejected);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Business Logic
+    |--------------------------------------------------------------------------
+    */
+
+    public function verify(User $user)
+    {
+        $this->update([
+            'status' => \App\Enums\DistributionRecordStatus::Verified,
+            'verified_by' => $user->id,
+            'verified_at' => now(),
+            'rejection_reason' => null,
+        ]);
+    }
+
+    public function reject(User $user, string $reason)
+    {
+        $this->update([
+            'status' => \App\Enums\DistributionRecordStatus::Rejected,
+            'verified_by' => $user->id,
+            'verified_at' => now(),
+            'rejection_reason' => $reason,
+        ]);
     }
 }
