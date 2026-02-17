@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
             DistributionRecordPermissionSeeder::class,
             WarehouseSeeder::class,
             ProductSeeder::class,
+            DistributionAreaSeeder::class,
             BatchSeeder::class,
             RawMaterialSeeder::class,
         ]);

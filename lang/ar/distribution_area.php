@@ -1,0 +1,53 @@
+<?php
+
+return [
+    'resource' => [
+        'label' => 'منطقة توزيع',
+        'plural_label' => 'مناطق التوزيع',
+    ],
+    'sections' => [
+        'basic_information' => 'المعلومات الأساسية',
+        'contact_and_capacity' => 'معلومات الاتصال والسعة',
+        'operational_settings' => 'الإعدادات التشغيلية',
+    ],
+    'fields' => [
+        'name' => 'الاسم',
+        'slug' => 'الاسم اللطيف (Slug)',
+        'location' => 'الموقع',
+        'location_helper' => 'العنوان الكامل بما في ذلك الحي لتوجيه السائق',
+        'warehouse' => 'المستودعات المعينة',
+        'warehouse_helper' => 'اختر المستودعات التي تزود هذه المنطقة',
+        'contact_person' => 'مسؤول الاتصال',
+        'contact_phone' => 'رقم الاتصال',
+        'contact_phone_helper' => 'الصيغة: +966 5X XXX XXXX',
+        'capacity' => 'السعة',
+        'capacity_helper' => 'الحد الأقصى للمستفيدين لكل توزيع',
+        'distribution_frequency' => 'التكرار',
+        'photo_thumbnail' => 'الصورة',
+        'requires_photo_verification' => 'يتطلب توثيق بالصور',
+        'requires_photo_verification_helper' => 'طلب دليل مصور للامتثال',
+        'is_active' => 'نشط',
+        'is_active_helper' => 'المناطق غير النشطة لن تظهر في خطط التوزيع',
+        'notes' => 'ملاحظات',
+        'notes_helper' => 'تعليمات خاصة: رمز البوابة، قيود وقوف السيارات، ساعات الاتصال',
+        'distributions_count' => 'عمليات التوزيع',
+        'created_at' => 'تاريخ الإنشاء',
+        'updated_at' => 'تاريخ التحديث',
+    ],
+    'filters' => [
+        'warehouse' => 'المستودع',
+        'is_active' => 'الحالة',
+        'active' => 'نشط',
+        'inactive' => 'غير نشط',
+        'photo_required' => 'الصورة مطلوبة',
+        'high_utilization' => 'طلب عالي (>300 مستفيد)',
+        'low_utilization' => 'طلب منخفض (<100 مستفيد)',
+    ],
+    'enums' => [
+        'daily' => 'يومي',
+        'weekly' => 'أسبوعي',
+        'biweekly' => 'نصف شهري',
+        'monthly' => 'شهري',
+        'on_demand' => 'عند الطلب',
+    ],
+];

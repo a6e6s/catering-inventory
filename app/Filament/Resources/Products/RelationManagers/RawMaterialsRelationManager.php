@@ -50,7 +50,7 @@ class RawMaterialsRelationManager extends RelationManager
                 DetachAction::make(),
                 DeleteAction::make(),
             ])
-            ->toolbarActions([
+            ->bulkActions([
                 BulkActionGroup::make([
                     DetachBulkAction::make(),
                     DeleteBulkAction::make(),

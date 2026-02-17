@@ -1,0 +1,53 @@
+<?php
+
+return [
+    'resource' => [
+        'label' => 'Distribution Area',
+        'plural_label' => 'Distribution Areas',
+    ],
+    'sections' => [
+        'basic_information' => 'Basic Information',
+        'contact_and_capacity' => 'Contact & Capacity',
+        'operational_settings' => 'Operational Settings',
+    ],
+    'fields' => [
+        'name' => 'Name',
+        'slug' => 'Slug',
+        'location' => 'Location',
+        'location_helper' => 'Full address including neighborhood for driver navigation',
+        'warehouse' => 'Assigned Warehouses',
+        'warehouse_helper' => 'Select warehouses that supply this area',
+        'contact_person' => 'Contact Person',
+        'contact_phone' => 'Contact Phone',
+        'contact_phone_helper' => 'Format: +966 5X XXX XXXX',
+        'capacity' => 'Capacity',
+        'capacity_helper' => 'Max beneficiaries per distribution',
+        'distribution_frequency' => 'Frequency',
+        'photo_thumbnail' => 'Photo',
+        'requires_photo_verification' => 'Requires Photo Verification',
+        'requires_photo_verification_helper' => 'Require photo evidence for compliance',
+        'is_active' => 'Active',
+        'is_active_helper' => 'Inactive areas won\'t appear in distribution planning',
+        'notes' => 'Notes',
+        'notes_helper' => 'Special instructions: Gate code, parking restrictions, contact hours',
+        'distributions_count' => 'Distributions',
+        'created_at' => 'Created At',
+        'updated_at' => 'Updated At',
+    ],
+    'filters' => [
+        'warehouse' => 'Warehouse',
+        'is_active' => 'Status',
+        'active' => 'Active',
+        'inactive' => 'Inactive',
+        'photo_required' => 'Photo Required',
+        'high_utilization' => 'High Demand (>300 cap)',
+        'low_utilization' => 'Low Demand (<100 cap)',
+    ],
+    'enums' => [
+        'daily' => 'Daily',
+        'weekly' => 'Weekly',
+        'biweekly' => 'Bi-weekly',
+        'monthly' => 'Monthly',
+        'on_demand' => 'On Demand',
+    ],
+];
