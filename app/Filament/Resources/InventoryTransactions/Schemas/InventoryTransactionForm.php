@@ -55,6 +55,8 @@ class InventoryTransactionForm
                                     ->label(__('inventory_transaction.fields.from_warehouse'))
                                     ->relationship('fromWarehouse', 'name', fn (Builder $query, Get $get) => $query->when($get('to_warehouse_id'), fn ($q, $id) => $q->where('id', '!=', $id))
                                     )
+                                    ->preload()
+                                    ->default(fn () => auth()->user()->hasRole('warehouse_staff') ? auth()->user()->warehouse_id : null)
                                     ->required(fn ($get) => in_array($get('type') instanceof InventoryTransactionType ? $get('type')->value : $get('type'), [
                                         InventoryTransactionType::Transfer->value,
                                         InventoryTransactionType::Return->value,

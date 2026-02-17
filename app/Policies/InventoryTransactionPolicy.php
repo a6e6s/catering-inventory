@@ -31,18 +31,14 @@ class InventoryTransactionPolicy
         }
 
         // Warehouse staff can see transactions involving their warehouse
-        if ($user->hasRole('warehouse_staff')) {
-            $userWarehouseIds = $user->warehouses?->pluck('id')->toArray() ?? [];
-
-            return in_array($transaction->from_warehouse_id, $userWarehouseIds)
-                || in_array($transaction->to_warehouse_id, $userWarehouseIds);
+        if ($user->hasRole('warehouse_staff') && $user->warehouse_id) {
+            return $transaction->from_warehouse_id === $user->warehouse_id
+                || $transaction->to_warehouse_id === $user->warehouse_id;
         }
 
         // Receivers can see transactions directed to their warehouse
-        if ($user->hasRole('receiver')) {
-            $userWarehouseIds = $user->warehouses?->pluck('id')->toArray() ?? [];
-
-            return in_array($transaction->to_warehouse_id, $userWarehouseIds);
+        if ($user->hasRole('receiver') && $user->warehouse_id) {
+            return $transaction->to_warehouse_id === $user->warehouse_id;
         }
 
         // Compliance officers see waste and distribution

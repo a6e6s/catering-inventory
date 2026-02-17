@@ -24,14 +24,13 @@ class DatabaseSeeder extends Seeder
         $user = User::factory()->create([
             'name' => 'Test User',
             'email' => 'admin@admin.com',
-            'password' => bcrypt('password'), // Ensure password is known
+            'password' => bcrypt('password'),
+            'role' => 'admin',
         ]);
 
         $user->assignRole('admin');
 
         $this->call([
-            InventoryTransactionPermissionSeeder::class,
-            DistributionRecordPermissionSeeder::class,
             WarehouseSeeder::class,
             ProductSeeder::class,
             DistributionAreaSeeder::class,

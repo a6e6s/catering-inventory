@@ -10,7 +10,7 @@ return [
     ],
     'roles' => [
         'receiver' => 'المستلم',
-        'warehouse_manager' => 'مدير المستودع',
+        'warehouse_staff' => 'موظف المستودع',
         'compliance_officer' => 'مسؤول الامتثال',
         'admin' => 'مدير النظام',
     ],

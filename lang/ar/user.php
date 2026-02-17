@@ -5,7 +5,7 @@ return [
     'plural' => 'المستخدمين',
     'roles' => [
         'admin' => 'مدير النظام',
-        'warehouse_manager' => 'مدير المستودع',
+        'warehouse_staff' => 'موظف المستودع',
         'receiver' => 'المستلم',
         'compliance_officer' => 'مسؤول الامتثال',
     ],

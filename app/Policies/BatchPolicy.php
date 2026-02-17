@@ -12,7 +12,7 @@ class BatchPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasRole('admin');
+        return $user->hasAnyRole(['admin', 'warehouse_staff']);
     }
 
     /**
@@ -20,7 +20,7 @@ class BatchPolicy
      */
     public function view(User $user, Batch $batch): bool
     {
-        return $user->hasRole('admin');
+        return $user->hasAnyRole(['admin', 'warehouse_staff']);
     }
 
     /**

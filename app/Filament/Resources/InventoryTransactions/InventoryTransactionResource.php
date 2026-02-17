@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class InventoryTransactionResource extends Resource
 {
@@ -74,5 +75,40 @@ class InventoryTransactionResource extends Resource
             'view' => ViewInventoryTransaction::route('/{record}'),
             'edit' => EditInventoryTransaction::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        $user = auth()->user();
+
+        if (! $user) {
+            return $query;
+        }
+
+        if ($user->hasRole('admin')) {
+            return $query;
+        }
+
+        if ($user->hasRole('warehouse_staff') && $user->warehouse_id) {
+            return $query->where(function ($q) use ($user) {
+                $q->where('from_warehouse_id', $user->warehouse_id)
+                    ->orWhere('to_warehouse_id', $user->warehouse_id);
+            });
+        }
+
+        if ($user->hasRole('receiver') && $user->warehouse_id) {
+            return $query->where('to_warehouse_id', $user->warehouse_id);
+        }
+
+        if ($user->hasRole('compliance_officer')) {
+            return $query->whereIn('type', [
+                \App\Enums\InventoryTransactionType::Waste,
+                \App\Enums\InventoryTransactionType::Distribution,
+            ]);
+        }
+
+        return $query;
     }
 }

@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Product;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ProductPolicy
 {
@@ -13,7 +12,7 @@ class ProductPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasRole('admin');
+        return $user->hasAnyRole(['admin', 'warehouse_staff']);
     }
 
     /**
@@ -21,7 +20,7 @@ class ProductPolicy
      */
     public function view(User $user, Product $product): bool
     {
-        return $user->hasRole('admin');
+        return $user->hasAnyRole(['admin', 'warehouse_staff']);
     }
 
     /**

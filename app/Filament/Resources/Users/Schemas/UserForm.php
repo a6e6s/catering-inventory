@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
-use Filament\Forms\Components\DateTimePicker;
+use App\Enums\UserRole;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class UserForm
@@ -13,7 +14,7 @@ class UserForm
     {
         return $schema
             ->components([
-                \Filament\Schemas\Components\Section::make(__('user.sections.user_details'))
+                Section::make(__('user.sections.user_details'))
                     ->schema([
                         TextInput::make('name')
                             ->label(__('user.fields.name'))
@@ -32,18 +33,26 @@ class UserForm
                             ->default(null),
                         Select::make('role')
                             ->label(__('user.fields.role'))
-                            ->options(\App\Enums\UserRole::class)
+                            ->options(UserRole::class)
                             ->required()
-                            ->searchable(),
+                            ->searchable()
+                            ->live(),
                         Select::make('warehouse_id')
                             ->label(__('user.fields.warehouse'))
                             ->relationship('warehouse', 'name')
                             ->searchable()
                             ->preload()
-                            ->visible(fn (\Filament\Schemas\Components\Component $component) => true), // Logic to show/hide based on role if needed
+                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => in_array(
+                                $get('role') instanceof UserRole ? $get('role')->value : $get('role'),
+                                [UserRole::WarehouseStaff->value, UserRole::Receiver->value]
+                            ))
+                            ->required(fn (\Filament\Schemas\Components\Utilities\Get $get) => in_array(
+                                $get('role') instanceof UserRole ? $get('role')->value : $get('role'),
+                                [UserRole::WarehouseStaff->value, UserRole::Receiver->value]
+                            )),
                     ])->columns(2),
 
-                \Filament\Schemas\Components\Section::make(__('user.sections.security'))
+                Section::make(__('user.sections.security'))
                     ->schema([
                         TextInput::make('password')
                             ->label(__('user.fields.password'))

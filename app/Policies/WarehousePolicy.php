@@ -12,7 +12,7 @@ class WarehousePolicy
      */
     public function viewAny(User $user): bool
     {
-        return true; // All authenticated users can see the list
+        return $user->hasAnyRole(['admin', 'warehouse_staff', 'receiver']);
     }
 
     /**
@@ -20,14 +20,12 @@ class WarehousePolicy
      */
     public function view(User $user, Warehouse $warehouse): bool
     {
-        // Admin can view all
-        if ($user->role === 'admin') {
+        if ($user->hasRole('admin')) {
             return true;
         }
 
-        // Users can only view their assigned warehouse or if they have permission
-        // For now, let's allow viewing all to support transfer workflows
-        return true;
+        // Users can view all warehouses to support transfer workflows
+        return $user->hasAnyRole(['warehouse_staff', 'receiver']);
     }
 
     /**
@@ -35,7 +33,7 @@ class WarehousePolicy
      */
     public function create(User $user): bool
     {
-        return $user->role === 'admin';
+        return $user->hasRole('admin');
     }
 
     /**
@@ -43,12 +41,12 @@ class WarehousePolicy
      */
     public function update(User $user, Warehouse $warehouse): bool
     {
-        if ($user->role === 'admin') {
+        if ($user->hasRole('admin')) {
             return true;
         }
 
-        // Warehouse managers can update their own warehouse
-        return $user->role === 'warehouse_manager' && $user->warehouse_id === $warehouse->id;
+        // Warehouse staff can update their own warehouse
+        return $user->hasRole('warehouse_staff') && $user->warehouse_id === $warehouse->id;
     }
 
     /**
@@ -56,12 +54,11 @@ class WarehousePolicy
      */
     public function delete(User $user, Warehouse $warehouse): bool
     {
-        // Main warehouse cannot be deleted (enforced in model too, but good to have here)
         if ($warehouse->is_main) {
             return false;
         }
 
-        return $user->role === 'admin';
+        return $user->hasRole('admin');
     }
 
     /**
@@ -69,7 +66,7 @@ class WarehousePolicy
      */
     public function restore(User $user, Warehouse $warehouse): bool
     {
-        return $user->role === 'admin';
+        return $user->hasRole('admin');
     }
 
     /**
@@ -81,6 +78,6 @@ class WarehousePolicy
             return false;
         }
 
-        return $user->role === 'admin';
+        return $user->hasRole('admin');
     }
 }

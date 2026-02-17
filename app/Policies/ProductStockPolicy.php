@@ -12,7 +12,7 @@ class ProductStockPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasRole('admin');
+        return $user->hasAnyRole(['admin', 'warehouse_staff']);
     }
 
     /**
@@ -20,7 +20,16 @@ class ProductStockPolicy
      */
     public function view(User $user, ProductStock $productStock): bool
     {
-        return $user->hasRole('admin');
+        if ($user->hasRole('admin')) {
+            return true;
+        }
+
+        // Warehouse staff can only view stock in their warehouse
+        if ($user->hasRole('warehouse_staff') && $user->warehouse_id) {
+            return $productStock->warehouse_id === $user->warehouse_id;
+        }
+
+        return false;
     }
 
     /**
@@ -28,7 +37,7 @@ class ProductStockPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return false; // Stock is managed via transactions
     }
 
     /**
@@ -36,7 +45,7 @@ class ProductStockPolicy
      */
     public function update(User $user, ProductStock $productStock): bool
     {
-        return false;
+        return false; // Stock is managed via transactions
     }
 
     /**

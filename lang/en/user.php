@@ -5,7 +5,7 @@ return [
     'plural' => 'Users',
     'roles' => [
         'admin' => 'Admin',
-        'warehouse_manager' => 'Warehouse Manager',
+        'warehouse_staff' => 'Warehouse Staff',
         'receiver' => 'Receiver',
         'compliance_officer' => 'Compliance Officer',
     ],

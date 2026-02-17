@@ -10,17 +10,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-
+use Illuminate\Support\Collection;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, HasRoles, Notifiable;
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return true; // Or $this->role === 'admin'; depending on strictness needed. True is safe for dev.
+        return true;
     }
 
     /**
@@ -57,13 +57,30 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'role' => \App\Enums\UserRole::class,
         ];
     }
+
+    // ──────────────────────────────────────────────
+    // Relationships
+    // ──────────────────────────────────────────────
 
     public function warehouse(): BelongsTo
     {
         return $this->belongsTo(Warehouse::class);
+    }
+
+    /**
+     * Backward-compatible accessor: returns a collection of warehouse IDs.
+     * The user has a single warehouse_id, but policies and scoping
+     * reference $user->warehouses for consistency.
+     */
+    public function getWarehousesAttribute(): Collection
+    {
+        if ($this->warehouse_id) {
+            return collect([(object) ['id' => $this->warehouse_id]]);
+        }
+
+        return collect();
     }
 
     public function inventoryTransactions(): HasMany
@@ -81,6 +98,10 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(DistributionRecord::class, 'verified_by');
     }
 
+    // ──────────────────────────────────────────────
+    // Scopes
+    // ──────────────────────────────────────────────
+
     public function scopeActive($query)
     {
         return $query; // Placeholder if we add 'is_active' column later
@@ -89,10 +110,5 @@ class User extends Authenticatable implements FilamentUser
     public function scopeByWarehouse($query, $warehouseId)
     {
         return $query->where('warehouse_id', $warehouseId);
-    }
-
-    public function scopeAdmins($query)
-    {
-        return $query->where('role', \App\Enums\UserRole::Admin);
     }
 }

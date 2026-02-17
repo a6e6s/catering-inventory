@@ -10,7 +10,7 @@ return [
     ],
     'roles' => [
         'receiver' => 'Receiver',
-        'warehouse_manager' => 'Warehouse Manager',
+        'warehouse_staff' => 'Warehouse Staff',
         'compliance_officer' => 'Compliance Officer',
         'admin' => 'Admin',
     ],
