@@ -25,7 +25,7 @@ class WarehouseResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 3;
 
     public static function getModelLabel(): string
     {
@@ -39,7 +39,7 @@ class WarehouseResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('warehouse.navigation_group');
+        return __('navigation.groups.master_data');
     }
 
     public static function getNavigationLabel(): string

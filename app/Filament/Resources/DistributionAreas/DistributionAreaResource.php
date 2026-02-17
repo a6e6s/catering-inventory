@@ -21,6 +21,13 @@ class DistributionAreaResource extends Resource
 
     protected static BackedEnum|string|null $navigationIcon = 'heroicon-o-map';
 
+    protected static ?int $navigationSort = 4;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('navigation.groups.master_data');
+    }
+
     protected static ?string $recordTitleAttribute = 'name';
 
     public static function getModelLabel(): string

@@ -12,6 +12,7 @@ return [
         'receiver' => 'المستلم',
         'warehouse_manager' => 'مدير المستودع',
         'compliance_officer' => 'مسؤول الامتثال',
+        'admin' => 'مدير النظام',
     ],
     'fields' => [
         'transaction_id' => 'معرف المعاملة',

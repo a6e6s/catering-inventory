@@ -36,6 +36,9 @@ class InventoryTransactionInfolist
                         TextEntry::make('toWarehouse.name')
                             ->label(__('inventory_transaction.fields.to_warehouse'))
                             ->placeholder(__('inventory_transaction.placeholders.na')),
+                        TextEntry::make('distributionArea.name')
+                            ->label(__('inventory_transaction.fields.distribution_area'))
+                            ->placeholder(__('inventory_transaction.placeholders.na')),
                         TextEntry::make('product.name')
                             ->label(__('inventory_transaction.fields.product')),
                         TextEntry::make('batch.lot_number')
@@ -44,7 +47,31 @@ class InventoryTransactionInfolist
                         TextEntry::make('quantity')
                             ->label(__('inventory_transaction.fields.quantity'))
                             ->numeric(),
+                        TextEntry::make('actual_quantity_received')
+                            ->label(__('inventory_transaction.fields.actual_quantity_received'))
+                            ->numeric()
+                            ->placeholder(__('inventory_transaction.placeholders.na'))
+                            ->color(fn ($record) => $record->hasVariance() ? 'warning' : null),
                     ])->columns(2),
+
+                Section::make(__('inventory_transaction.sections.status_and_approval'))
+                    ->schema([
+                        TextEntry::make('completedBy.name')
+                            ->label(__('inventory_transaction.fields.completed_by'))
+                            ->placeholder(__('inventory_transaction.placeholders.na')),
+                        TextEntry::make('completed_at')
+                            ->label(__('inventory_transaction.fields.completed_at'))
+                            ->dateTime()
+                            ->placeholder(__('inventory_transaction.placeholders.na')),
+                        TextEntry::make('rejectedBy.name')
+                            ->label(__('inventory_transaction.fields.rejected_by'))
+                            ->placeholder(__('inventory_transaction.placeholders.na')),
+                        TextEntry::make('rejected_at')
+                            ->label(__('inventory_transaction.fields.rejected_at'))
+                            ->dateTime()
+                            ->placeholder(__('inventory_transaction.placeholders.na')),
+                    ])->columns(2)
+                    ->collapsible(),
 
                 Section::make(__('inventory_transaction.fields.notes'))
                     ->schema([

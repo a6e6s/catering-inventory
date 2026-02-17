@@ -22,6 +22,13 @@ class TransactionApprovalResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCheckBadge;
 
+    protected static ?int $navigationSort = 2;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('navigation.groups.inventory_management');
+    }
+
     public static function getModelLabel(): string
     {
         return __('transaction_approval.singular');

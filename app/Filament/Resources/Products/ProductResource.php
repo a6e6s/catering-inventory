@@ -24,6 +24,8 @@ class ProductResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    protected static ?int $navigationSort = 1;
+
     public static function getModelLabel(): string
     {
         return __('product.single');
@@ -41,7 +43,7 @@ class ProductResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('warehouse.navigation_group'); // Consistent grouping
+        return __('navigation.groups.master_data');
     }
 
     public static function form(Schema $schema): Schema

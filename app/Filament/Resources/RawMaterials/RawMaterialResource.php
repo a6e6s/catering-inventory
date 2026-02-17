@@ -24,6 +24,8 @@ class RawMaterialResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    protected static ?int $navigationSort = 2;
+
     public static function getModelLabel(): string
     {
         return __('raw_material.model_label');
@@ -36,7 +38,7 @@ class RawMaterialResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('raw_material.navigation_group');
+        return __('navigation.groups.master_data');
     }
 
     public static function getNavigationLabel(): string

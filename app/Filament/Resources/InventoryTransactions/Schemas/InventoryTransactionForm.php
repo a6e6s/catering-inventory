@@ -82,7 +82,7 @@ class InventoryTransactionForm
                                     ->disabled(fn ($record) => $record && $record->status !== InventoryTransactionStatus::Draft),
 
                                 Select::make('distribution_area_id')
-                                    ->label('Distribution Area') // Localize later: __('inventory_transaction.fields.distribution_area')
+                                    ->label(__('inventory_transaction.fields.distribution_area'))
                                     ->relationship('distributionArea', 'name')
                                     ->required(fn ($get) => ($get('type') instanceof InventoryTransactionType ? $get('type')->value : $get('type')) === InventoryTransactionType::Distribution->value)
                                     ->visible(fn ($get) => ($get('type') instanceof InventoryTransactionType ? $get('type')->value : $get('type')) === InventoryTransactionType::Distribution->value)
@@ -181,7 +181,7 @@ class InventoryTransactionForm
 
                                         $qty = $query->sum('quantity');
 
-                                        return __('Available: ').$qty;
+                                        return __('inventory_transaction.messages.available_stock', ['quantity' => $qty]);
                                     }),
                             ]),
 

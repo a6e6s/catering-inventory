@@ -22,6 +22,8 @@ class UserResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
 
+    protected static ?int $navigationSort = 1;
+
     public static function getModelLabel(): string
     {
         return __('user.singular');
@@ -39,7 +41,7 @@ class UserResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Settings'; // Or Management, as per plan
+        return __('navigation.groups.system');
     }
 
     public static function form(Schema $schema): Schema

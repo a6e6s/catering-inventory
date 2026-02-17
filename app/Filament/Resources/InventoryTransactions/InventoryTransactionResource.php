@@ -22,6 +22,8 @@ class InventoryTransactionResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    protected static ?int $navigationSort = 1;
+
     public static function getModelLabel(): string
     {
         return __('inventory_transaction.single');
@@ -39,7 +41,7 @@ class InventoryTransactionResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('warehouse.navigation_group');
+        return __('navigation.groups.inventory_management');
     }
 
     public static function form(Schema $schema): Schema
@@ -60,7 +62,7 @@ class InventoryTransactionResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\ApprovalsRelationManager::class,
         ];
     }
 

@@ -12,15 +12,17 @@ enum InventoryTransactionStatus: string implements HasLabel, HasColor
     case Approved = 'approved';
     case Rejected = 'rejected';
     case Completed = 'completed';
+    case Cancelled = 'cancelled';
 
     public function getLabel(): ?string
     {
         return match ($this) {
-            self::Draft => 'Draft',
-            self::PendingApproval => 'Pending Approval',
-            self::Approved => 'Approved',
-            self::Rejected => 'Rejected',
-            self::Completed => 'Completed',
+            self::Draft => __('inventory_transaction.statuses.draft'),
+            self::PendingApproval => __('inventory_transaction.statuses.pending_approval'),
+            self::Approved => __('inventory_transaction.statuses.approved'),
+            self::Rejected => __('inventory_transaction.statuses.rejected'),
+            self::Completed => __('inventory_transaction.statuses.completed'),
+            self::Cancelled => __('inventory_transaction.statuses.cancelled'),
         };
     }
 
@@ -32,6 +34,7 @@ enum InventoryTransactionStatus: string implements HasLabel, HasColor
             self::Approved => 'info',
             self::Rejected => 'danger',
             self::Completed => 'success',
+            self::Cancelled => 'gray',
         };
     }
 }

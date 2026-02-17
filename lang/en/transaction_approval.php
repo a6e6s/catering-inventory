@@ -12,6 +12,7 @@ return [
         'receiver' => 'Receiver',
         'warehouse_manager' => 'Warehouse Manager',
         'compliance_officer' => 'Compliance Officer',
+        'admin' => 'Admin',
     ],
     'fields' => [
         'transaction_id' => 'Transaction ID',
