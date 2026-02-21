@@ -34,6 +34,7 @@ return [
         'waste' => 'Waste / Disposal',
         'distribution' => 'Distribution (Final)',
         'adjustment' => 'Adjustment (Manual)',
+        'production' => 'Production',
     ],
     'statuses' => [
         'draft' => 'Draft',

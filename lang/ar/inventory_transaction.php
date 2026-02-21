@@ -34,6 +34,7 @@ return [
         'waste' => 'إتلاف / هدر',
         'distribution' => 'توزيع (نهائي)',
         'adjustment' => 'تعديل (يدوي)',
+        'production' => 'إنتاج',
     ],
     'statuses' => [
         'draft' => 'مسودة',
