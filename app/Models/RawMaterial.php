@@ -80,7 +80,11 @@ class RawMaterial extends Model
     public function getTotalStockAttribute(): float
     {
         return $this->batches()
-            ->where('expiry_date', '>', now())
+            ->where('status', 'active')
+            ->where(function($query) {
+                $query->whereNull('expiry_date')
+                      ->orWhere('expiry_date', '>', now());
+            })
             ->sum('quantity');
     }
 

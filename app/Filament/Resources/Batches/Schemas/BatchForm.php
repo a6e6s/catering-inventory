@@ -25,7 +25,7 @@ class BatchForm
                             ->required(),
                         Select::make('warehouse_id')
                             ->label(__('batch.fields.warehouse'))
-                            ->relationship('warehouse', 'name')
+                            ->relationship('warehouse', 'name', fn ($query) => $query->main())
                             ->searchable()
                             ->preload()
                             ->required(),

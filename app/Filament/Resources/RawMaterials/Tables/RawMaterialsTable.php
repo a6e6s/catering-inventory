@@ -33,8 +33,21 @@ class RawMaterialsTable
                     ->badge(),
                 TextColumn::make('total_stock')
                     ->label(__('raw_material.columns.total_stock'))
-                    ->state(fn (RawMaterial $record) => $record->total_stock)
-                    ->numeric(),
+                    ->getStateUsing(fn (RawMaterial $record) => 
+                        $record->batches()
+                            ->where('status', 'active')
+                            ->where(function($query) {
+                                $query->whereNull('expiry_date')
+                                      ->orWhere('expiry_date', '>', now());
+                            })
+                            ->sum('quantity')
+                    )
+                    ->numeric(2)
+                    ->suffix(fn (RawMaterial $record) => ' ' . $record->unit),
+                TextColumn::make('min_stock_level')
+                    ->label(__('raw_material.fields.min_stock_level'))
+                    ->numeric()
+                    ->toggleable(),
                 IconColumn::make('is_active')
                     ->label(__('raw_material.fields.is_active'))
                     ->boolean(),
@@ -49,12 +62,12 @@ class RawMaterialsTable
                     ->label(__('raw_material.filters.is_active')),
                 TrashedFilter::make(),
             ])
-            ->actions([
+            ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make(),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                     ForceDeleteBulkAction::make(),
