@@ -11,6 +11,7 @@ return [
         'quantity' => 'الكمية',
         'last_updated' => 'آخر تحديث',
         'status' => 'الحالة',
+        'max_producible' => 'الحد الأقصى للإنتاج',
     ],
     'sections' => [
         'stock_information' => 'معلومات المخزون',
@@ -28,5 +29,9 @@ return [
         'in_stock' => 'متوفر',
         'low_stock' => 'منخفض',
         'out_of_stock' => 'نفد المخزون',
+    ],
+    'validation' => [
+        'exceeds_available_ingredients' => 'الكمية تتجاوز المواد الخام المتاحة. الحد الأقصى للإنتاج: :max وحدة',
+        'max_available' => 'الحد الأقصى المتاح: :max وحدة',
     ],
 ];

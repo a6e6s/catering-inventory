@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\ProductStocks\Schemas;
 
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Group;
@@ -23,18 +22,13 @@ class ProductStockForm
                                 Select::make('product_id')
                                     ->relationship('product', 'name')
                                     ->label(__('product_stock.fields.product'))
-                                    ->disabled()
+                                    ->live()
                                     ->required(),
                                 Select::make('warehouse_id')
                                     ->relationship('warehouse', 'name')
                                     ->label(__('product_stock.fields.warehouse'))
-                                    ->disabled()
+                                    ->live()
                                     ->required(),
-                                Select::make('batch_id')
-                                    ->relationship('batch', 'lot_number')
-                                    ->label(__('product_stock.fields.batch'))
-                                    ->disabled()
-                                    ->placeholder(__('product_stock.placeholders.no_specific_batch')),
                             ])->columns(2),
 
                         Section::make(__('product_stock.sections.quantity_and_status'))
@@ -42,16 +36,31 @@ class ProductStockForm
                                 TextInput::make('quantity')
                                     ->numeric()
                                     ->label(__('product_stock.fields.quantity'))
-                                    ->disabled()
-                                    ->suffix(fn ($record) => $record?->product?->unit->name ?? __('product_stock.units_suffix')),
+                                    ->required()
+                                    ->minValue(1)
+                                    ->live(onBlur: true)
+                                    ->helperText(function ($get) {
+                                        $productId = $get('product_id');
+                                        $warehouseId = $get('warehouse_id');
+                                        $quantity = $get('quantity') ?: 0;
+                                        
+                                        if (!$productId || !$warehouseId) {
+                                            return null;
+                                        }
+                                        
+                                        $product = \App\Models\Product::find($productId);
+                                        if (!$product) {
+                                            return null;
+                                        }
+                                        
+                                        $maxQty = $product->calculateMaxProducibleQuantity($warehouseId, $quantity);
+                                        
+                                        return __('product_stock.validation.max_available', ['max' => $maxQty]);
+                                    })
+                                    ->suffix(fn ($record) => $record?->product?->unit?->name ?? __('product_stock.units_suffix')),
 
                                 DateTimePicker::make('last_updated')
-                                    ->label(__('product_stock.fields.last_updated'))
-                                    ->disabled(),
-
-                                Placeholder::make('status')
-                                    ->label(__('product_stock.fields.status'))
-                                    ->content(fn ($record) => $record?->status),
+                                    ->label(__('product_stock.fields.last_updated')),
                             ])->columns(2),
                     ]),
             ]);

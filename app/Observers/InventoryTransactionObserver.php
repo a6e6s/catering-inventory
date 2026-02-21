@@ -39,10 +39,10 @@ class InventoryTransactionObserver
 
         $transaction->transactionApprovals()->create([
             'step' => 1,
-            'role' => TransactionApprovalRole::from($approvalRole),
+            'approver_role' => TransactionApprovalRole::from($approvalRole),
             'status' => TransactionApprovalStatus::Pending,
             'comments' => null,
-            'user_id' => null, // Will be set when someone claims/approves
+            'approver_id' => null, // Will be set when someone claims/approves
         ]);
 
         Log::info('Approval step created', [

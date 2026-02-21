@@ -72,4 +72,41 @@ class Product extends Model
     {
         return $query->where('is_active', true);
     }
+
+    /**
+     * Calculate maximum quantity that can be produced based on available raw materials
+     */
+    public function calculateMaxProducibleQuantity(?string $warehouseId = null, float $requestedQuantity = 0): int
+    {
+        $ingredients = $this->ingredients;
+        
+        if ($ingredients->isEmpty()) {
+            return 0;
+        }
+
+        $maxQuantities = [];
+
+        foreach ($ingredients as $ingredient) {
+            $availableStock = \App\Models\Batch::where('raw_material_id', $ingredient->raw_material_id)
+                ->where('status', 'active')
+                ->where(function($query) {
+                    $query->whereNull('expiry_date')
+                          ->orWhere('expiry_date', '>', now());
+                })
+                ->when($warehouseId, fn($q) => $q->where('warehouse_id', $warehouseId))
+                ->sum('quantity');
+
+            if ($ingredient->quantity_required <= 0) {
+                continue;
+            }
+
+            // Calculate remaining stock after consuming for requested quantity
+            $remainingStock = $availableStock - ($ingredient->quantity_required * $requestedQuantity);
+            
+            // Calculate how many more units can be produced with remaining stock
+            $maxQuantities[] = floor($remainingStock / $ingredient->quantity_required);
+        }
+
+        return empty($maxQuantities) ? 0 : max(0, (int) min($maxQuantities));
+    }
 }

@@ -12,6 +12,7 @@ enum InventoryTransactionType: string implements HasLabel, HasColor
     case Waste = 'waste';
     case Distribution = 'distribution';
     case Adjustment = 'adjustment';
+    case Production = 'production';
 
     public function getLabel(): ?string
     {
@@ -21,6 +22,7 @@ enum InventoryTransactionType: string implements HasLabel, HasColor
             self::Waste => __('inventory_transaction.types.waste'),
             self::Distribution => __('inventory_transaction.types.distribution'),
             self::Adjustment => __('inventory_transaction.types.adjustment'),
+            self::Production => __('inventory_transaction.types.production'),
         };
     }
 
@@ -32,6 +34,7 @@ enum InventoryTransactionType: string implements HasLabel, HasColor
             self::Waste => 'danger',
             self::Distribution => 'success',
             self::Adjustment => 'gray',
+            self::Production => 'primary',
         };
     }
 }

@@ -37,7 +37,7 @@ class ProductStockPolicy
      */
     public function create(User $user): bool
     {
-        return false; // Stock is managed via transactions
+        return true; // Stock is managed via transactions
     }
 
     /**

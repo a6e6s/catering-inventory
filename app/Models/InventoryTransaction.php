@@ -222,9 +222,9 @@ class InventoryTransaction extends Model
         }
 
         // Initiator cannot approve their own transaction
-        if ($this->initiated_by === $user->id) {
-            return false;
-        }
+        // if ($this->initiated_by === $user->id) {
+        //     return false;
+        // }
 
         // Admin can approve everything
         if ($user->hasRole('admin')) {
@@ -368,8 +368,8 @@ class InventoryTransaction extends Model
 
         // Create approval record for the rejection
         $this->transactionApprovals()->create([
-            'user_id' => $user?->id,
-            'role' => TransactionApprovalRole::from($this->typeRules()['approval_role'] ?? 'admin'),
+            'approver_id' => $user?->id,
+            'approver_role' => TransactionApprovalRole::from($this->typeRules()['approval_role'] ?? 'admin'),
             'status' => TransactionApprovalStatus::Rejected,
             'comments' => $reason,
         ]);

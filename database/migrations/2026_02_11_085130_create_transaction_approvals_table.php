@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->uuid('id')->primary();
             $table->foreignUuid('transaction_id')->constrained('inventory_transactions');
             $table->string('approver_role')->comment('receiver,warehouse_manager,compliance_officer');
-            $table->foreignId('approver_id')->constrained('users');
+            $table->foreignId('approver_id')->nullable()->constrained('users');
             $table->integer('step')->default(1);
             $table->string('status')->default('pending')->index();
             $table->text('comments')->nullable();

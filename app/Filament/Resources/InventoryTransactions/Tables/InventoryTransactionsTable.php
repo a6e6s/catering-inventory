@@ -110,7 +110,7 @@ class InventoryTransactionsTable
                     ->icon('heroicon-o-check')
                     ->requiresConfirmation()
                     ->visible(fn (InventoryTransaction $record) => $record->canBeApprovedBy(auth()->user()))
-                    ->form([
+                    ->schema([
                         TextInput::make('actual_quantity')
                             ->label(__('inventory_transaction.fields.actual_quantity_received'))
                             ->numeric()
@@ -146,7 +146,7 @@ class InventoryTransactionsTable
                     ->icon('heroicon-o-x-mark')
                     ->requiresConfirmation()
                     ->visible(fn (InventoryTransaction $record) => $record->canBeApprovedBy(auth()->user()))
-                    ->form([
+                    ->schema([
                         Textarea::make('rejection_reason')
                             ->label(__('inventory_transaction.fields.rejection_reason'))
                             ->required()
