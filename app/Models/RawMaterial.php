@@ -49,7 +49,7 @@ class RawMaterial extends Model
     {
         return $this->belongsToMany(Product::class, 'product_ingredients')
             ->using(ProductIngredient::class)
-            ->withPivot(['quantity_required', 'unit'])
+            ->withPivot('quantity_required', 'unit')
             ->withTimestamps();
     }
 

@@ -10,6 +10,8 @@ class ProductIngredient extends Pivot
 {
     use HasFactory;
 
+    public $incrementing = true;
+    
     protected $table = 'product_ingredients';
 
     /**
@@ -32,7 +34,6 @@ class ProductIngredient extends Pivot
     protected function casts(): array
     {
         return [
-            'id' => 'integer',
             'quantity_required' => 'decimal:2',
         ];
     }
